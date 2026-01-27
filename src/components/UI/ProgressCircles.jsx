@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function ProgressCircle({ value, max, color, size = 80 }) {
+export function ProgressCircles({ value, max, color, size = 80 }) {
   const percentage = Math.min((value / max) * 100, 100);
   const circumference = 2 * Math.PI * 35;
   const offset = circumference - (percentage / 100) * circumference;
