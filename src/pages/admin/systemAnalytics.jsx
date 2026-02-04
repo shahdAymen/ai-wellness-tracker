@@ -2,7 +2,7 @@ import React from 'react';
 import { TrendingUp, Users, Activity, Zap } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 
-export function SystemAnalytics() {
+export default function SystemAnalytics() {
   const metrics = [
     { label: 'Daily Active Users', value: '8,234', change: '+12%', icon: Users },
     { label: 'Plans Generated', value: '1,456', change: '+23%', icon: Activity },

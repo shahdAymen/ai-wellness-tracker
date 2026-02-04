@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, MapPin, Star, Leaf } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
 export function Restaurants() {
   const [searchQuery, setSearchQuery] = useState('');

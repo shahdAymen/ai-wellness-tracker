@@ -1,50 +1,75 @@
+// App.jsx
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ProtectedRoute } from './components/Shared/ProtectedRoute';
-import { UserLayout } from './components/layout/UserLayout';
-import { AdminLayout } from './components/layout/AdminLayout';
+import { Navigate, Routes, Route } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/Shared/ProtectedRoute';
+import './styles/globals.css';
+// Layouts
+import UserLayout from './components/layout/UserLayout';
+import AdminLayout from './components/Layout/AdminLayout';
 
-// Public Pages
-import { LandingPage } from './pages/public/LandingPage';
-import { Login } from './pages/public/Login';
-import { Register } from './pages/public/Register';
-import { AdminLogin } from './pages/public/AdminLogin';
+// ===============================
+// PUBLIC PAGES
+// ===============================
+import LandingPage from './pages/public/LandingPage';
+import Login from './pages/public/Login';
+import Register from './pages/public/Register';
+import AdminLogin from './pages/public/AdminLogin';
 
-// User Pages
-import { CompleteProfile } from './pages/user/CompleteProfile';
-import { UserDashboard } from './pages/user/UserDashboard';
-import { Protocol } from './pages/user/Protocol';
-import { Tracker } from './pages/user/Tracker';
-import { Analytics } from './pages/user/Analytics';
-import { Restaurants } from './pages/user/Restaurants';
-import { Notifications } from './pages/user/Notifications';
-import { Settings } from './pages/user/Settings';
-import { DeviceSync } from './pages/user/DeviceSync';
+// ===============================
+// USER PAGES
+// ===============================
+import CompleteProfile from './pages/user/CompleteProfile';
+import UserDashboard from './pages/user/UserDashboard';
+import Protocol from './pages/user/Protocol';
+import Tracker from './pages/user/Tracker';
+import Analytics from './pages/user/Analytics';
+import Restaurants from './pages/user/Restaurants';
+import Notifications from './pages/user/Notifications';
+import Settings from './pages/user/Settings';
+import DeviceSync from './pages/user/DeviceSync';
 
-// Admin Pages
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { ManageUsers } from './pages/admin/ManageUsers';
-import { ManageRecipes } from './pages/admin/ManageRecipes';
-import { ManageWorkouts } from './pages/admin/ManageWorkouts';
-import { ManageRestaurants } from './pages/admin/ManageRestaurants';
-import { SystemAnalytics } from './pages/admin/systemAnalytics';
+// ===============================
+// ADMIN PAGES
+// ===============================
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageUsers from './pages/admin/ManageUsers';
+import ManageRecipes from './pages/admin/ManageRecipes';
+import ManageWorkouts from './pages/admin/ManageWorkouts';
+import ManageRestaurants from './pages/admin/ManageRestaurants';
+import SystemAnalytics from './pages/admin/systemAnalytics';
 
+// ===============================
+// ROUTES HANDLER
+// ===============================
 function AppRoutes() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+
+  if (loading) return null;
 
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* ---------------- PUBLIC ---------------- */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/app" /> : <Login />} />
-      <Route path="/register" element={isAuthenticated ? <Navigate to="/app" /> : <Register />} />
-      <Route path="/admin/login" element={isAuthenticated && isAdmin ? <Navigate to="/admin" /> : <AdminLogin />} />
-
-      {/* User Routes */}
+      
       <Route
-        path="/app"
+        path="/login"
+        element={
+          isAuthenticated ? <Navigate to={isAdmin ? '/admin' : '/user'} replace /> : <Login />
+        }
+      />
+      <Route
+        path="/register"
+        element={isAuthenticated ? <Navigate to="/user" replace /> : <Register />}
+      />
+      <Route
+        path="/admin/login"
+        element={isAuthenticated && isAdmin ? <Navigate to="/admin" replace /> : <AdminLogin />}
+      />
+
+      {/* ---------------- USER ---------------- */}
+      <Route
+        path="/user"
         element={
           <ProtectedRoute>
             <UserLayout />
@@ -62,7 +87,7 @@ function AppRoutes() {
         <Route path="device-sync" element={<DeviceSync />} />
       </Route>
 
-      {/* Admin Routes */}
+      {/* ---------------- ADMIN ---------------- */}
       <Route
         path="/admin"
         element={
@@ -79,20 +104,15 @@ function AppRoutes() {
         <Route path="analytics" element={<SystemAnalytics />} />
       </Route>
 
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* ---------------- FALLBACK ---------------- */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
+// ===============================
+// APP ROOT
+// ===============================
 export default function App() {
-  return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  );
+  return <AppRoutes />; // لا يوجد Router هنا
 }

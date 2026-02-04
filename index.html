@@ -1,16 +1,14 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ai-wellness-tracker</title>
-  </head>
-  <body>
-    <!-- هذا هو المكان اللي React سيحقن فيه التطبيق -->
+<html lang="en" class="">
+  <body class="bg-white text-black transition-colors duration-300">
     <div id="root"></div>
 
-    <!-- اترك هذا كما هو، يشير لملف main.jsx -->
+    <script>
+      // لو المستخدم اختار Dark Mode قبل كده
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

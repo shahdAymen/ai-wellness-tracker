@@ -1,9 +1,9 @@
 import React from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
-export function ManageWorkouts() {
+export default function ManageWorkouts() {
   const workouts = [
     { id: 1, name: 'HIIT Cardio Blast', duration: 30, difficulty: 'Advanced', calories: 350 },
     { id: 2, name: 'Beginner Yoga Flow', duration: 45, difficulty: 'Beginner', calories: 180 },

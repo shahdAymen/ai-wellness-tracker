@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Utensils, Droplets, Dumbbell } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
 export function Tracker() {
   const [activeTab, setActiveTab] = useState<'meals' | 'water' | 'workouts'>('meals');

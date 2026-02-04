@@ -1,66 +1,138 @@
-/* landing.css */
+/* landing.css - جاهز للاستخدام */
 :root {
+  --color-light-bg: #ffffff;
+  --color-light-text: #1f2937;
+  --color-dark-bg: #1e293b;
+  --color-dark-text: #f1f5f9;
+  --color-primary: #646cff;
+  --color-primary-hover: #535bf2;
+  --color-card-light: #f9f9f9;
+  --color-card-dark: #333;
+  --border-radius: 12px;
+  --transition: 0.3s ease;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
+  transition: background-color var(--transition), color var(--transition);
+  line-height: 1.5;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Light / Dark Mode */
+body.light {
+  background-color: var(--color-light-bg);
+  color: var(--color-light-text);
+}
+body.dark {
+  background-color: var(--color-dark-bg);
+  color: var(--color-dark-text);
 }
 
+/* Typography */
+h1, h2, h3, h4 {
+  margin: 0 0 1rem 0;
+}
+h1 { font-size: 3em; }
+h2 { font-size: 2em; }
+p { margin: 0.5rem 0; }
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Buttons */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  border: none;
   padding: 0.6em 1.2em;
   font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: opacity var(--transition), transform var(--transition);
 }
-button:hover {
-  border-color: #646cff;
+button.primary {
+  background-color: var(--color-primary);
+  color: white;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button.primary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+button.secondary {
+  background-color: var(--color-card-light);
+  color: var(--color-light-text);
+  border: 1px solid #ccc;
+}
+body.dark button.secondary {
+  background-color: var(--color-card-dark);
+  color: var(--color-dark-text);
+  border: 1px solid #555;
 }
 
-body.light {
-  background-color: white;
-  color: #1f2937; /* gray-800 */
+/* Cards */
+.card {
+  background-color: var(--color-card-dark);
+  color: var(--color-dark-text);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform var(--transition), box-shadow var(--transition);
+  margin-bottom: 1rem;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+body.light .card {
+  background-color: var(--color-card-light);
+  color: var(--color-light-text);
 }
 
-body.dark {
-  background-color: #1e293b; /* slate-900 */
-  color: #f1f5f9; /* slate-100 */
+/* Layout helpers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 }
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* Inputs */
+input, select {
+  width: 100%;
+  padding: 0.6em 1em;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  background-color: var(--color-card-light);
+  color: var(--color-light-text);
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+body.dark input, body.dark select {
+  background-color: var(--color-card-dark);
+  color: var(--color-dark-text);
+  border: 1px solid #555;
+}
+
+/* Misc helpers */
+.text-center { text-align: center; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }

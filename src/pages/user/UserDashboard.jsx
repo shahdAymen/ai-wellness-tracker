@@ -2,7 +2,8 @@ import React from 'react';
 import { Flame, Zap, Droplets, Utensils, Dumbbell, Watch, CheckCircle } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 import { ProgressCircle } from '../../components/UI/ProgressCircles';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
+
 
 export function UserDashboard() {
   const stats = {

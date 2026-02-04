@@ -2,7 +2,7 @@ import React from 'react';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 
-export function Analytics() {
+export default function Analytics() {
   const stats = [
     { label: 'Weight Change', value: '-2.5 kg', trend: 'down', change: '5%', period: 'Last 30 days' },
     { label: 'Avg Calories', value: '1,850', trend: 'up', change: '3%', period: 'Last 7 days' },

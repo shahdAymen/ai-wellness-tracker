@@ -2,15 +2,18 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-export function ProtectedRoute({ children, requireAdmin = false }) {
-  const { loading, isAuthenticated, isAdmin } = useAuth();
+export default function ProtectedRoute({ children, requireAdmin = false }) {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  // WAIT AUTH INIT
+  if (loading) return null;
 
+  // NOT LOGGED IN
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (requireAdmin && !isAdmin) return <Navigate to="/app" replace />;
 
-  return <>{children}</>;
+  // ADMIN ONLY ROUTE
+  if (requireAdmin && !isAdmin) return <Navigate to="/user" replace />;
+
+  return children;
 }
-
-export default ProtectedRoute;
+export { ProtectedRoute };

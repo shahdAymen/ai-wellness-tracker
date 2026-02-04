@@ -1,28 +1,81 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { authAPI, setToken, getToken, removeToken } from '../API/api';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ===============================
+  // INIT AUTH (on refresh)
+  // ===============================
   useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) setUser(JSON.parse(stored));
+    const token = getToken();
+    const savedUser = localStorage.getItem('user');
+
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser));
+    } else {
+      removeToken();
+      localStorage.removeItem('user');
+    }
+
     setLoading(false);
   }, []);
 
-  const login = (email, password, isAdminLogin = false) => {
-    const mockUser = isAdminLogin
-      ? { id: 'admin-1', name: 'Admin', email, role: 'admin' }
-      : { id: 'user-1', name: email.split('@')[0], email, role: 'user' };
+  // ===============================
+  // LOGIN
+  // ===============================
+  const login = async (email, password, isAdmin = false) => {
+    const response = isAdmin
+      ? await authAPI.adminLogin({ email, password })
+      : await authAPI.login({ email, password });
 
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+    const userData = {
+      email,
+      role: response.role,
+    };
+
+    setToken(response.token);
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // ===============================
+  // GOOGLE LOGIN
+  // ===============================
+  const loginWithGoogle = async (idToken) => {
+    const response = await authAPI.googleLogin({ idToken });
+
+    const userData = {
+      role: response.role,
+    };
+
+    setToken(response.token);
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  // ===============================
+  // REGISTER
+  // ===============================
+  const register = async (data) => {
+    await authAPI.register({
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password,
+    });
+
+    await login(data.email, data.password);
+  };
+
+  // ===============================
+  // LOGOUT
+  // ===============================
   const logout = () => {
     setUser(null);
+    removeToken();
     localStorage.removeItem('user');
   };
 
@@ -32,8 +85,10 @@ export function AuthProvider({ children }) {
         user,
         loading,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin',
+        isAdmin: user?.role === 'Admin',
         login,
+        loginWithGoogle,
+        register,
         logout,
       }}
     >
@@ -42,9 +97,14 @@ export function AuthProvider({ children }) {
   );
 }
 
+// ===============================
+// USE AUTH
+// ===============================
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used inside AuthProvider');
+  }
   return context;
 }
-export default AuthContext;
+export { AuthContext };

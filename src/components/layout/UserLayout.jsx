@@ -16,7 +16,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
 
-export function UserLayout() {
+export default function UserLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,22 +34,17 @@ export function UserLayout() {
   ];
 
   const handleLogout = async () => {
-    await logout(); // لو الـ logout async
+    await logout();
     navigate('/');
   };
 
-  // دالة للحصول على Initials الاسم
   const getInitials = (name) => {
     if (!name) return '';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
+    return name.split(' ').map((n) => n[0]).join('').toUpperCase();
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Sidebar */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ${
@@ -66,7 +61,7 @@ export function UserLayout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 overflow-y-auto">
+          <nav className="flex-1 p-4 overflow-y-auto transition-colors duration-300">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname.startsWith(item.path);
@@ -78,7 +73,7 @@ export function UserLayout() {
                     navigate(item.path);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors duration-300 ${
                     isActive
                       ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -96,7 +91,7 @@ export function UserLayout() {
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors duration-300"
             >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
@@ -106,13 +101,13 @@ export function UserLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen transition-colors duration-300">
         {/* Top Bar */}
-        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300"
             >
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -139,7 +134,7 @@ export function UserLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto transition-colors duration-300">
           <Outlet />
         </main>
       </div>

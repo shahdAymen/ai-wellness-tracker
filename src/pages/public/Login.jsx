@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity, Mail, Lock } from 'lucide-react';
 import Button from '../../components/UI/Button';
+import SocialLogin from '../../components/Auth/SocialLogin';
+
+
 
 import { Card } from '../../components/UI/Card';
 import { useAuth } from '../../context/AuthContext';
@@ -70,6 +73,10 @@ export function Login() {
             Login
           </Button>
         </form>
+        <div className="mt-6">
+          <SocialLogin redirectPath="/app" />
+        </div>
+
 
         <div className="mt-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">

@@ -1,16 +1,54 @@
-# React + Vite
+# 🏋️ VitalityAI - AI Wellness Tracker Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+منصة شاملة للياقة البدنية والصحة مدعومة بالذكاء الاصطناعي، تحتوي على 23 صفحة متكاملة لتتبع الصحة والتغذية والتمارين الرياضية.
 
-Currently, two official plugins are available:
+## ✨ المميزات الرئيسية
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🔐 نظام مصادقة متطور
+- تسجيل دخول بالبريد الإلكتروني وكلمة المرور
+- تسجيل دخول بحساب Google
+- تسجيل دخول بحساب Facebook
+- لوحة تحكم منفصلة للمديرين (Admin Panel)
+- JWT Token-based authentication
+- استعادة كلمة المرور
 
-## React Compiler
+### 👤 صفحات المستخدمين
+- **Dashboard**: لوحة تحكم مع إحصائيات يومية (سعرات، ماء، تمارين)
+- **Tracker**: تسجيل الوجبات والأنشطة
+- **Analytics**: رسوم بيانية تفاعلية لتتبع التقدم
+- **Restaurants**: دليل المطاعم الصحية
+- **Protocol**: برامج تمارين مخصصة
+- **Device Sync**: مزامنة مع الأجهزة الذكية
+- **Notifications**: إشعارات وتذكيرات
+- **Settings**: إعدادات الحساب والتفضيلات
+- **Complete Profile**: إكمال الملف الشخصي
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🛡️ Admin Panel
+- **Dashboard**: لوحة تحكم شاملة
+- **Manage Users**: إدارة المستخدمين
+- **Manage Recipes**: إدارة الوصفات
+- **Manage Workouts**: إدارة التمارين
+- **Manage Restaurants**: إدارة المطاعم
+- **System Analytics**: تحليلات النظام
 
-## Expanding the ESLint configuration
+### 🌐 صفحات عامة
+- **Landing Page**: الصفحة الرئيسية
+- **Login/Register**: صفحات التسجيل ودخول
+- **Admin Login**: صفحة دخول المديرين
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🎨 التصميم
+- تصميم عصري وجذاب
+- دعم كامل لـ Dark Mode
+- Responsive Design (متوافق مع جميع الأجهزة)
+- استخدام Tailwind CSS v4
+- مكونات UI قابلة لإعادة الاستخدام
+
+## 🚀 البدء السريع
+
+### المتطلبات
+- Node.js (v16 أو أحدث)
+- Backend API يعمل على `http://localhost:5009`
+
+### 1. التثبيت
+```bash
+npm install

@@ -1,20 +1,22 @@
 import React from 'react';
 import { User, Lock, Bell, Globe } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 import { useAuth } from '../../context/AuthContext';
 
-export function Settings() {
+export default function Settings() {
   const { user } = useAuth();
 
   return (
     <div className="space-y-6">
+      {/* ---------------- HEADER ---------------- */}
       <div>
         <h2 className="text-gray-900 dark:text-white mb-2">Settings</h2>
         <p className="text-gray-600 dark:text-gray-400">Manage your account and preferences</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
+        {/* ---------------- PROFILE ---------------- */}
         <Card>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
@@ -44,6 +46,7 @@ export function Settings() {
           </div>
         </Card>
 
+        {/* ---------------- SECURITY ---------------- */}
         <Card>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-950 flex items-center justify-center">
@@ -54,18 +57,14 @@ export function Settings() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                Current Password
-              </label>
+              <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">Current Password</label>
               <input
                 type="password"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                New Password
-              </label>
+              <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">New Password</label>
               <input
                 type="password"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
@@ -75,6 +74,7 @@ export function Settings() {
           </div>
         </Card>
 
+        {/* ---------------- NOTIFICATIONS ---------------- */}
         <Card>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
@@ -99,6 +99,7 @@ export function Settings() {
           </div>
         </Card>
 
+        {/* ---------------- PREFERENCES ---------------- */}
         <Card>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-950 flex items-center justify-center">
@@ -116,9 +117,7 @@ export function Settings() {
               </select>
             </div>
             <div>
-              <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">
-                Language
-              </label>
+              <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">Language</label>
               <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white">
                 <option>English</option>
                 <option>Arabic</option>

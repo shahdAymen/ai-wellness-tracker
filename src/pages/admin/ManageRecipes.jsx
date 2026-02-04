@@ -1,9 +1,9 @@
 import React from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
-export function ManageRecipes() {
+function ManageRecipes() {
   const recipes = [
     { id: 1, name: 'Salmon Quinoa Bowl', category: 'Lunch', calories: 450, protein: 35 },
     { id: 2, name: 'Greek Yogurt Parfait', category: 'Breakfast', calories: 280, protein: 18 },
@@ -57,3 +57,6 @@ export function ManageRecipes() {
     </div>
   );
 }
+
+export default ManageRecipes;
+export { ManageRecipes };

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Search, Edit, Trash2, UserCheck, UserX } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
-export function ManageUsers() {
+export default function ManageUsers() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const users = [
@@ -39,24 +39,12 @@ export function ManageUsers() {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">
-                  Plan
-                </th>
-                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">
-                  Joined
-                </th>
-                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">User</th>
+                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">Email</th>
+                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">Status</th>
+                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">Plan</th>
+                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">Joined</th>
+                <th className="px-6 py-3 text-left text-xs uppercase text-gray-600 dark:text-gray-300">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">

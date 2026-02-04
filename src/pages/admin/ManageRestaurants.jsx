@@ -1,9 +1,9 @@
 import React from 'react';
 import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
-export function ManageRestaurants() {
+export default function ManageRestaurants() {
   const restaurants = [
     { id: 1, name: 'Green Leaf Bistro', location: 'Downtown', cuisine: 'Vegan', rating: 4.8 },
     { id: 2, name: 'Protein Palace', location: 'Mall Area', cuisine: 'Healthy Fast Food', rating: 4.6 },

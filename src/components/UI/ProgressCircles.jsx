@@ -1,9 +1,14 @@
-import React from 'react';
+import React from "react";
+import { useTheme } from "../../context/ThemeContext";
 
-export function ProgressCircles({ value, max, color, size = 80 }) {
+export function ProgressCircle({ value, max, size = 80 }) {
+  const { theme } = useTheme(); // نجيب theme من Context
   const percentage = Math.min((value / max) * 100, 100);
   const circumference = 2 * Math.PI * 35;
   const offset = circumference - (percentage / 100) * circumference;
+
+  // تحديد لون الدائرة الأمامية حسب theme
+  const strokeColor = theme === "dark" ? "#facc15" : "#3b82f6"; // أصفر في dark، أزرق في light
 
   return (
     <svg width={size} height={size} className="transform -rotate-90">
@@ -14,13 +19,13 @@ export function ProgressCircles({ value, max, color, size = 80 }) {
         stroke="currentColor"
         strokeWidth="8"
         fill="none"
-        className="text-gray-200 dark:text-gray-700"
+        className="text-gray-100 dark:text-gray-400"
       />
       <circle
         cx={size / 2}
         cy={size / 2}
         r="35"
-        stroke={color}
+        stroke={strokeColor}
         strokeWidth="8"
         fill="none"
         strokeDasharray={circumference}
@@ -31,3 +36,5 @@ export function ProgressCircles({ value, max, color, size = 80 }) {
     </svg>
   );
 }
+
+export default ProgressCircle;

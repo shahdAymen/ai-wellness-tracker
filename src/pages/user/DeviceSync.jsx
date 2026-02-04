@@ -1,9 +1,9 @@
 import React from 'react';
 import { Watch, Bluetooth, Activity, Heart, Zap } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
-export function DeviceSync() {
+function DeviceSync() {
   const devices = [
     { id: 1, name: 'Apple Watch Series 8', type: 'Smartwatch', connected: true, battery: 87 },
     { id: 2, name: 'Fitbit Charge 5', type: 'Fitness Tracker', connected: false, battery: null },
@@ -107,5 +107,8 @@ export function DeviceSync() {
         </div>
       </div>
     </div>
-    );
+  );
 }
+
+export default DeviceSync;
+export { DeviceSync };

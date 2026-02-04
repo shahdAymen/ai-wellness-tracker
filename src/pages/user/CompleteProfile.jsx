@@ -1,7 +1,7 @@
 import React from 'react';
 import { Watch, Bluetooth, Activity, Heart, Zap } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
-import { Button } from '../../components/UI/Button';
+import Button from '../../components/UI/Button';
 
 export function DeviceSync() {
   const devices = [
