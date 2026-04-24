@@ -6,31 +6,31 @@ export const authConfig = {
   // -------------------------------
   // BACKEND API
   // -------------------------------
-  
- apiBaseUrl: 'http://localhost:5009',
+  apiBaseUrl: "https://nondespotic-foreseeable-brynn.ngrok-free.dev/api/Auth",
 
   // -------------------------------
   // GOOGLE SIGN-IN
   // -------------------------------
-  google: {
-    clientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
-  },
+google: {
+  clientId: "454689813031-e64siip5h5prliemgjmqqg82smj9q870.apps.googleusercontent.com",
+},
 
-  // -------------------------------
+
+  // -------------------------------D
   // FACEBOOK LOGIN (UI ONLY)
   // -------------------------------
   facebook: {
-    appId: 'YOUR_FACEBOOK_APP_ID',
-    version: 'v18.0',
+    appId: "YOUR_FACEBOOK_APP_ID",
+    version: "v18.0",
   },
 
   // -------------------------------
   // STORAGE KEYS
   // -------------------------------
   storage: {
-    token: 'token',
-    user: 'user',
-    theme: 'theme',
+    token: "token",
+    user: "user",
+    theme: "theme",
   },
 };
 
@@ -38,10 +38,7 @@ export const authConfig = {
 // HELPERS
 // ===============================
 
-export const getApiBaseUrl = () => {
-    return 'http://localhost:5009/api/Auth';
-};
-    
+export const getApiBaseUrl = () => authConfig.apiBaseUrl;
 
 export const getGoogleClientId = () => authConfig.google.clientId;
 

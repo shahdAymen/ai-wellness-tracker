@@ -23,14 +23,14 @@ export default function UserLayout() {
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/app' },
-    { icon: ClipboardList, label: 'My Protocol', path: '/app/protocol' },
-    { icon: Activity, label: 'Tracker', path: '/app/tracker' },
-    { icon: BarChart3, label: 'Analytics', path: '/app/analytics' },
-    { icon: MapPin, label: 'Locations', path: '/app/restaurants' },
-    { icon: Watch, label: 'Device Sync', path: '/app/device-sync' },
-    { icon: Bell, label: 'Alerts', path: '/app/notifications' },
-    { icon: Settings, label: 'Settings', path: '/app/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '' },
+    { icon: ClipboardList, label: 'My Protocol', path: 'protocol' },
+    { icon: Activity, label: 'Tracker', path: 'tracker' },
+    { icon: BarChart3, label: 'Analytics', path: 'analytics' },
+    { icon: MapPin, label: 'Restaurants', path: 'restaurants' },
+    { icon: Watch, label: 'Device Sync', path: 'device-sync' },
+    { icon: Bell, label: 'Notifications', path: 'notifications' },
+    { icon: Settings, label: 'Settings', path: 'settings' },
   ];
 
   const handleLogout = async () => {
@@ -38,47 +38,55 @@ export default function UserLayout() {
     navigate('/');
   };
 
-  const getInitials = (name) => {
-    if (!name) return '';
-    return name.split(' ').map((n) => n[0]).join('').toUpperCase();
-  };
+  const getInitials = (name = '') =>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r
+        transform transition-transform duration-200
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2">
               <Activity className="w-8 h-8 text-emerald-500" />
-              <span className="text-xl text-gray-900 dark:text-white">VitalityAI</span>
+              <span className="text-xl text-gray-900 dark:text-white">
+                VitalityAI
+              </span>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 overflow-y-auto transition-colors duration-300">
+          <nav className="flex-1 p-4 overflow-y-auto">
             {menuItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname.startsWith(item.path);
+
+              const isActive =
+                item.path === ''
+                  ? location.pathname === '/user'
+                  : location.pathname.includes(item.path);
 
               return (
                 <button
-                  key={item.path}
+                  key={item.label}
                   onClick={() => {
                     navigate(item.path);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors duration-300 ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors
+                  ${
                     isActive
                       ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
-                  aria-current={isActive ? 'page' : undefined}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
@@ -91,7 +99,7 @@ export default function UserLayout() {
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors duration-300"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
             >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
@@ -101,30 +109,32 @@ export default function UserLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen transition-colors duration-300">
+      <div className="flex-1 flex flex-col min-h-screen">
         {/* Top Bar */}
-        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 transition-colors duration-300">
-          <div className="flex items-center justify-between">
+        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+          <div className="flex items-center">
+            {/* Left (menu button) */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300"
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
-            <div className="hidden lg:block">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Consistency is key, {user?.name}. You&apos;re doing great.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
+            {/* Right */}
+            <div className="ml-auto flex items-center gap-4">
               <ThemeToggle />
+
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm text-gray-900 dark:text-white">{user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                  <p className="text-sm text-gray-900 dark:text-white">
+                    {user?.name}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {user?.email}
+                  </p>
                 </div>
+
                 <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
                   {getInitials(user?.name)}
                 </div>
@@ -134,15 +144,15 @@ export default function UserLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto transition-colors duration-300">
+        <main className="flex-1 p-6 overflow-auto">
           <Outlet />
         </main>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

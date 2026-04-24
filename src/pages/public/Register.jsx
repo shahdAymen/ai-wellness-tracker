@@ -35,11 +35,14 @@ export function Register() {
         fullName: formData.name, // مهم جدًا
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      
       });
 
       alert('Account created successfully');
       navigate('/login');
     } catch (error) {
+      console.error('Registration error:', error);
       alert('Registration failed');
     } finally {
       setLoading(false);

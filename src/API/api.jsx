@@ -61,8 +61,8 @@ export const authAPI = {
   // Google Login
   googleLogin: async (data) => {
     const res = await fetch(`${API_BASE_URL}/google-login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 

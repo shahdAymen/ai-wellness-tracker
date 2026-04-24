@@ -3,8 +3,8 @@ import { Plus, Utensils, Droplets, Dumbbell } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 import Button from '../../components/UI/Button';
 
-export function Tracker() {
-  const [activeTab, setActiveTab] = useState<'meals' | 'water' | 'workouts'>('meals');
+export default function Tracker() {
+  const [activeTab, setActiveTab] = useState('meals');
 
   const meals = [
     { id: 1, name: 'Oatmeal with Berries', time: '08:00 AM', calories: 350, protein: 12, carbs: 58, fat: 8 },
@@ -33,24 +33,15 @@ export function Tracker() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <Button
-          variant={activeTab === 'meals' ? 'primary' : 'ghost'}
-          onClick={() => setActiveTab('meals')}
-        >
+        <Button variant={activeTab === 'meals' ? 'primary' : 'ghost'} onClick={() => setActiveTab('meals')}>
           <Utensils className="w-4 h-4" />
           Meals
         </Button>
-        <Button
-          variant={activeTab === 'water' ? 'primary' : 'ghost'}
-          onClick={() => setActiveTab('water')}
-        >
+        <Button variant={activeTab === 'water' ? 'primary' : 'ghost'} onClick={() => setActiveTab('water')}>
           <Droplets className="w-4 h-4" />
           Water
         </Button>
-        <Button
-          variant={activeTab === 'workouts' ? 'primary' : 'ghost'}
-          onClick={() => setActiveTab('workouts')}
-        >
+        <Button variant={activeTab === 'workouts' ? 'primary' : 'ghost'} onClick={() => setActiveTab('workouts')}>
           <Dumbbell className="w-4 h-4" />
           Workouts
         </Button>
@@ -69,20 +60,6 @@ export function Tracker() {
                   {meal.calories} kcal
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Protein</p>
-                  <p className="text-gray-900 dark:text-white">{meal.protein}g</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Carbs</p>
-                  <p className="text-gray-900 dark:text-white">{meal.carbs}g</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Fat</p>
-                  <p className="text-gray-900 dark:text-white">{meal.fat}g</p>
-                </div>
-              </div>
             </Card>
           ))}
         </div>
@@ -92,17 +69,8 @@ export function Tracker() {
         <div className="space-y-4">
           {waterLog.map((entry) => (
             <Card key={entry.id}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
-                    <Droplets className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-gray-900 dark:text-white">{entry.amount}ml</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{entry.time}</p>
-                  </div>
-                </div>
-              </div>
+              <p className="text-gray-900 dark:text-white">{entry.amount} ml</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{entry.time}</p>
             </Card>
           ))}
         </div>
@@ -112,17 +80,10 @@ export function Tracker() {
         <div className="space-y-4">
           {workouts.map((workout) => (
             <Card key={workout.id}>
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h4 className="text-gray-900 dark:text-white mb-1">{workout.name}</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{workout.time}</p>
-                </div>
-                <span className="px-3 py-1 bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 rounded-full text-sm">
-                  {workout.calories} kcal burned
-                </span>
-              </div>
+              <h4 className="text-gray-900 dark:text-white">{workout.name}</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{workout.time}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Duration: {workout.duration} minutes
+                {workout.duration} min • {workout.calories} kcal
               </p>
             </Card>
           ))}
@@ -131,4 +92,3 @@ export function Tracker() {
     </div>
   );
 }
-export default Tracker

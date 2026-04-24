@@ -7,9 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ===============================
-  // INIT AUTH (on refresh)
-  // ===============================
+  // INIT AUTH ON REFRESH
   useEffect(() => {
     const token = getToken();
     const savedUser = localStorage.getItem('user');
@@ -24,15 +22,14 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // ===============================
-  // LOGIN
-  // ===============================
+  // EMAIL/PASSWORD LOGIN
   const login = async (email, password, isAdmin = false) => {
     const response = isAdmin
       ? await authAPI.adminLogin({ email, password })
       : await authAPI.login({ email, password });
 
     const userData = {
+      name: response.name || email,
       email,
       role: response.role,
     };
@@ -42,13 +39,13 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // ===============================
   // GOOGLE LOGIN
-  // ===============================
-  const loginWithGoogle = async (idToken) => {
-    const response = await authAPI.googleLogin({ idToken });
+  const loginWithGoogle = async (credential) => {
+    const response = await authAPI.googleLogin({ credential });
 
     const userData = {
+      name: response.name,
+      email: response.email,
       role: response.role,
     };
 
@@ -57,22 +54,20 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // ===============================
   // REGISTER
-  // ===============================
   const register = async (data) => {
     await authAPI.register({
       fullName: data.fullName,
       email: data.email,
       password: data.password,
+      confirmPassword: data.confirmPassword,
     });
 
-    await login(data.email, data.password);
+    // بعد التسجيل نسجل المستخدم تلقائياً
+    await login(data.email, data.password, false);
   };
 
-  // ===============================
   // LOGOUT
-  // ===============================
   const logout = () => {
     setUser(null);
     removeToken();
@@ -97,9 +92,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-// ===============================
-// USE AUTH
-// ===============================
+// USE AUTH HOOK
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
@@ -107,4 +100,5 @@ export function useAuth() {
   }
   return context;
 }
+
 export { AuthContext };
