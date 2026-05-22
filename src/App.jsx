@@ -5,7 +5,7 @@ import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/Shared/ProtectedRoute';
 import './styles/globals.css';
 // Layouts
-import UserLayout from './components/layout/UserLayout';
+import UserLayout from './components/Layout/UserLayout';
 import AdminLayout from './components/Layout/AdminLayout';
 
 // ===============================

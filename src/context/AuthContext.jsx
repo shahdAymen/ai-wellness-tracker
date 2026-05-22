@@ -55,18 +55,24 @@ export function AuthProvider({ children }) {
   };
 
   // REGISTER
+ // REGISTER
   const register = async (data) => {
+  try {
     await authAPI.register({
       fullName: data.fullName,
       email: data.email,
       password: data.password,
-      confirmPassword: data.confirmPassword,
+      confirmPassword: data.password,
     });
 
-    // بعد التسجيل نسجل المستخدم تلقائياً
+    // login فقط لو التسجيل نجح
     await login(data.email, data.password, false);
-  };
 
+  } catch (error) {
+    console.error("Register failed:", error);
+    throw error;
+  }
+};
   // LOGOUT
   const logout = () => {
     setUser(null);
