@@ -1,95 +1,194 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Star, Leaf } from 'lucide-react';
-import { Card } from '../../components/UI/Card';
-import Button from '../../components/UI/Button';
+import React, { useState, useEffect } from 'react';
+import {
+  Search,
+  MapPin,
+  Star,
+  Leaf,
+  Loader2,
+  Navigation,
+  Phone,
+} from 'lucide-react';
 
-export function Restaurants() {
+import { restaurantAPI } from '../../API';
+
+export default function Restaurants() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
+  const [userCoords, setUserCoords] = useState(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
-  const restaurants = [
-    {
-      id: 1,
-      name: 'Green Leaf Bistro',
-      cuisine: 'Vegan',
-      rating: 4.8,
-      distance: '1.2 km',
-      healthyOptions: 24,
-    },
-    {
-      id: 2,
-      name: 'Protein Palace',
-      cuisine: 'Healthy Fast Food',
-      rating: 4.6,
-      distance: '2.5 km',
-      healthyOptions: 18,
-    },
-    {
-      id: 3,
-      name: 'Mediterranean Kitchen',
-      cuisine: 'Mediterranean',
-      rating: 4.9,
-      distance: '3.1 km',
-      healthyOptions: 32,
-    },
-  ];
+  useEffect(() => {
+    requestLocation();
+  }, []);
+
+  const requestLocation = () => {
+    setLoading(true);
+    setLocationError('');
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation not supported');
+      setLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+
+        setUserCoords(coords);
+        fetchNearbyRestaurants(coords.lat, coords.lng);
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setPermissionDenied(true);
+          setLocationError('Location denied, using Cairo');
+
+          fetchNearbyRestaurants(30.0444, 31.2357);
+        } else {
+          setLocationError('Unable to get location');
+          setLoading(false);
+        }
+      }
+    );
+  };
+
+  const fetchNearbyRestaurants = async (lat, lng) => {
+    setLoading(true);
+
+    try {
+      const data = await restaurantAPI.getNearby(lat, lng);
+      setRestaurants(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setRestaurants([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filtered = restaurants.filter((r) => {
+    const q = searchQuery.toLowerCase();
+
+    return (
+      !q ||
+      r.name?.toLowerCase().includes(q) ||
+      r.cuisine?.toLowerCase().includes(q)
+    );
+  });
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-[#0A0E27] text-white p-4 space-y-6">
+
+      {/* Header */}
       <div>
-        <h2 className="text-gray-900 dark:text-white mb-2">Healthy Restaurants</h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Discover nutritious dining options near you
-        </p>
+        <h1 className="text-4xl font-black">RESTAURANTS</h1>
+        <p className="text-gray-400 text-xs">HEALTHY FOOD NEAR YOU</p>
       </div>
 
-      <div className="flex gap-4">
+      {/* Search + Location */}
+      <div className="flex gap-2">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-3 text-gray-500 w-4 h-4" />
+
           <input
-            type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search restaurants or cuisine..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            placeholder="Search..."
+            className="w-full pl-10 py-3 bg-[#151935] border border-gray-700 text-white"
           />
         </div>
-        <Button variant="outline">
-          <MapPin className="w-4 h-4" />
-          Filters
-        </Button>
+
+        <button
+          onClick={requestLocation}
+          className="border border-cyan-400 text-cyan-400 px-4"
+        >
+          <Navigation className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {restaurants.map((restaurant) => (
-          <Card key={restaurant.id} className="cursor-pointer hover:shadow-lg transition-shadow">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h4 className="text-gray-900 dark:text-white mb-1">{restaurant.name}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{restaurant.cuisine}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                <span className="text-sm text-gray-900 dark:text-white">{restaurant.rating}</span>
-              </div>
-            </div>
+      {/* Error */}
+      {locationError && (
+        <div className="text-yellow-400 text-xs border border-yellow-500 p-2">
+          {locationError}
+        </div>
+      )}
 
-            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span>{restaurant.distance}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Leaf className="w-4 h-4 text-emerald-500" />
-                <span>{restaurant.healthyOptions} healthy options</span>
-              </div>
+      {/* Loading */}
+      {loading && (
+        <div className="flex gap-2 text-gray-400">
+          <Loader2 className="animate-spin w-4 h-4" />
+          Loading restaurants...
+        </div>
+      )}
+
+      {/* Results */}
+      {!loading && (
+        <>
+          {filtered.length === 0 ? (
+            <div className="text-gray-500 text-center p-10">
+              No restaurants found
             </div>
-          </Card>
-        ))}
-      </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-3">
+
+              {filtered.map((r) => (
+                <div
+                  key={r.id}
+                  className="border border-gray-700 p-4 hover:border-cyan-400"
+                >
+
+                  {/* Name */}
+                  <div className="flex justify-between">
+                    <div>
+                      <h3>{r.name}</h3>
+                      <p className="text-xs text-gray-400">{r.cuisine}</p>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 text-yellow-400" />
+                      <span>{r.rating}</span>
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex gap-3 text-xs text-gray-400 mt-2">
+                    <span>
+                      <MapPin className="w-3 h-3 inline" /> {r.distanceMeters
+                        ? `${(r.distanceMeters / 1000).toFixed(1)} km`
+                        : r.distance}
+                    </span>
+
+                    <span className="text-green-400 flex items-center gap-1">
+                      <Leaf className="w-3 h-3" />
+                      {r.healthyOptions}
+                    </span>
+                  </div>
+
+                  {/* Address */}
+                  {r.address && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      {r.address}
+                    </p>
+                  )}
+
+                  {/* Phone */}
+                  {r.phone && (
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                      <Phone className="w-3 h-3" />
+                      {r.phone}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
-
 }
-export default Restaurants;
-
-

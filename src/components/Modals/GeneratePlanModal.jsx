@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Zap, Target, Calendar } from 'lucide-react';
+import { X } from 'lucide-react';
+import { aiAPI } from '../../API';
 
 export function GeneratePlanModal({ isOpen, onClose }) {
   const [goal, setGoal] = useState('');
@@ -8,59 +9,33 @@ export function GeneratePlanModal({ isOpen, onClose }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [plan, setPlan] = useState(null);
 
-  const handleGenerate = () => {
-    setIsGenerating(true);
+  const handleGenerate = async () => {
+    try {
+      if (!goal) return;
 
-    setTimeout(() => {
+      setIsGenerating(true);
+
+      const res = await aiAPI.generateWeeklyPlan(
+        goal,
+        Number(duration)
+      );
+
+      console.log('AI RESPONSE:', res);
+
+      const data = res?.data ?? res;
+
       setPlan({
-        title: 'خطة تغذية وتمارين شخصية',
-        duration: `${duration} أيام`,
-        dailyCalories: 2200,
-
-        meals: [
-          {
-            name: 'الفطور',
-            calories: 500,
-            time: '08:00',
-          },
-          {
-            name: 'الغداء',
-            calories: 700,
-            time: '13:00',
-          },
-          {
-            name: 'العشاء',
-            calories: 600,
-            time: '19:00',
-          },
-          {
-            name: 'سناك',
-            calories: 400,
-            time: '16:00',
-          },
-        ],
-
-        workouts: [
-          {
-            name: 'HIIT Cardio',
-            duration: '30 دقيقة',
-            days: ['الإثنين', 'الأربعاء', 'الجمعة'],
-          },
-          {
-            name: 'تمارين القوة',
-            duration: '45 دقيقة',
-            days: ['الثلاثاء', 'الخميس'],
-          },
-          {
-            name: 'يوجا واسترخاء',
-            duration: '20 دقيقة',
-            days: ['السبت', 'الأحد'],
-          },
-        ],
+        title: data?.title || 'AI Plan',
+        duration: data?.duration || `${duration} days`,
+        meals: data?.meals ?? [],
+        workouts: data?.workouts ?? [],
       });
 
+    } catch (err) {
+      console.error('Generate error:', err);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const handleReset = () => {
@@ -73,300 +48,110 @@ export function GeneratePlanModal({ isOpen, onClose }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50"
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
           />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 50 }}
-            transition={{
-              type: 'spring',
-              damping: 25,
-              stiffness: 300,
-            }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0A0E27] border-4 border-[#FF6B35] shadow-[16px_16px_0px_0px_rgba(255,107,53,0.5)] z-50"
-          >
-            {/* Header */}
-            <div className="bg-[#FF6B35] p-6 border-b-4 border-black flex items-center justify-between sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <Zap
-                  className="w-8 h-8 text-black"
-                  strokeWidth={2.5}
-                />
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <motion.div className="w-full max-w-2xl bg-[#0A0E27] border-4 border-[#FF6B35]">
 
-                <h2 className="text-2xl font-black text-black mono">
+              {/* HEADER */}
+              <div className="bg-[#FF6B35] p-6 flex justify-between items-center">
+                <h2 className="font-black text-black">
                   GENERATE AI PLAN
                 </h2>
+
+                <button onClick={onClose}>
+                  <X />
+                </button>
               </div>
 
-              <button
-                onClick={onClose}
-                className="w-10 h-10 bg-black hover:bg-white transition-colors flex items-center justify-center"
-              >
-                <X
-                  className="w-6 h-6 text-[#FF6B35]"
-                  strokeWidth={2.5}
-                />
-              </button>
-            </div>
+              <div className="p-6 space-y-4">
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {!plan ? (
-                <>
-                  {/* Form */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block mono text-sm text-gray-400 mb-2">
-                        ما هو هدفك الرئيسي؟
-                      </label>
+                {!plan ? (
+                  <>
+                    {/* GOAL */}
+                    <select
+                      value={goal}
+                      onChange={(e) => setGoal(e.target.value)}
+                      className="w-full p-3 bg-[#151935] text-white"
+                    >
+                      <option value="">اختر الهدف</option>
+                      <option value="lose">خسارة الوزن</option>
+                      <option value="gain">زيادة العضلات</option>
+                      <option value="maintain">الحفاظ على الوزن</option>
+                    </select>
 
-                      <select
-                        value={goal}
-                        onChange={(e) => setGoal(e.target.value)}
-                        className="w-full bg-[#151935] border-4 border-gray-700 focus:border-[#FF6B35] text-white p-4 mono outline-none transition-colors"
-                        dir="rtl"
-                      >
-                        <option value="">
-                          اختر هدفك
-                        </option>
-
-                        <option value="lose">
-                          خسارة الوزن
-                        </option>
-
-                        <option value="gain">
-                          زيادة الكتلة العضلية
-                        </option>
-
-                        <option value="maintain">
-                          الحفاظ على الوزن
-                        </option>
-
-                        <option value="health">
-                          تحسين الصحة العامة
-                        </option>
-                      </select>
-                    </div>
-
-                    {/* Duration */}
-                    <div>
-                      <label className="block mono text-sm text-gray-400 mb-2">
-                        مدة الخطة
-                      </label>
-
-                      <div className="grid grid-cols-3 gap-3">
-                        {['7', '14', '30'].map((days) => (
-                          <button
-                            key={days}
-                            onClick={() => setDuration(days)}
-                            className={`p-4 border-4 transition-all ${
-                              duration === days
-                                ? 'bg-[#FF6B35] border-black text-black'
-                                : 'bg-[#151935] border-gray-700 text-white hover:border-[#FF6B35]'
-                            }`}
-                          >
-                            <div className="text-3xl font-black mono">
-                              {days}
-                            </div>
-
-                            <div className="text-xs mono">
-                              يوم
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Info Box */}
-                    <div className="bg-[#151935] border-4 border-[#CCFF00] p-4">
-                      <div className="flex items-start gap-3">
-                        <Target
-                          className="w-5 h-5 text-[#CCFF00] mt-1"
-                          strokeWidth={2.5}
-                        />
-
-                        <div className="text-sm text-gray-300">
-                          سيتم إنشاء خطة مخصصة لك تشمل
-                          جدول الوجبات والتمارين بناءً
-                          على بياناتك الشخصية وأهدافك.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Generate Button */}
-                  <button
-                    onClick={handleGenerate}
-                    disabled={!goal || isGenerating}
-                    className="w-full bg-[#FF6B35] hover:bg-[#CCFF00] disabled:bg-gray-700 border-4 border-black p-4 transition-colors disabled:cursor-not-allowed"
-                  >
-                    {isGenerating ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            ease: 'linear',
-                          }}
+                    {/* DURATION */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {['7', '14', '30'].map((d) => (
+                        <button
+                          key={d}
+                          onClick={() => setDuration(d)}
+                          className={`p-4 border ${
+                            duration === d
+                              ? 'bg-orange-500 text-black'
+                              : 'bg-[#151935] text-white'
+                          }`}
                         >
-                          <Zap
-                            className="w-6 h-6 text-black"
-                            strokeWidth={2.5}
-                          />
-                        </motion.div>
+                          {d} يوم
+                        </button>
+                      ))}
+                    </div>
 
-                        <span className="mono font-bold text-black">
-                          جاري الإنشاء...
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="mono font-bold text-black">
-                        إنشاء الخطة
-                      </span>
-                    )}
-                  </button>
-                </>
-              ) : (
-                <>
-                  {/* Generated Plan */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-6"
-                  >
-                    {/* Plan Header */}
-                    <div className="bg-[#151935] border-4 border-[#CCFF00] p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Calendar
-                          className="w-6 h-6 text-[#CCFF00]"
-                          strokeWidth={2.5}
-                        />
+                    {/* GENERATE */}
+                    <button
+                      onClick={handleGenerate}
+                      disabled={!goal || isGenerating}
+                      className="w-full bg-orange-500 p-4 font-bold disabled:opacity-50"
+                    >
+                      {isGenerating ? 'جاري الإنشاء...' : 'إنشاء الخطة'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* RESULT */}
+                    <h3 className="text-white text-xl font-bold">
+                      {plan.title}
+                    </h3>
 
-                        <h3 className="text-2xl font-black text-white">
-                          {plan.title}
-                        </h3>
-                      </div>
+                    <p className="text-gray-300">
+                      {plan.duration}
+                    </p>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="mono text-xs text-gray-400">
-                            المدة
-                          </div>
-
-                          <div className="text-xl font-bold text-white mono">
-                            {plan.duration}
-                          </div>
+                    {/* MEALS */}
+                    <div className="space-y-2 mt-4">
+                      {(plan.meals || []).map((m, i) => (
+                        <div
+                          key={i}
+                          className="bg-[#151935] p-2 text-white"
+                        >
+                          {m.name} - {m.calories} kcal
                         </div>
-
-                        <div>
-                          <div className="mono text-xs text-gray-400">
-                            السعرات اليومية
-                          </div>
-
-                          <div className="text-xl font-bold text-[#CCFF00] mono">
-                            {plan.dailyCalories} kcal
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
 
-                    {/* Meals */}
-                    <div>
-                      <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                        <div className="w-1 h-6 bg-[#FF6B35]" />
-                        جدول الوجبات اليومي
-                      </h4>
+                    {/* ACTIONS */}
+                    <button
+                      onClick={handleReset}
+                      className="mt-4 bg-gray-700 p-3 w-full text-white"
+                    >
+                      إنشاء جديد
+                    </button>
 
-                      <div className="space-y-2">
-                        {plan.meals.map((meal, index) => (
-                          <div
-                            key={index}
-                            className="bg-[#151935] border-l-4 border-[#FF6B35] p-4 flex items-center justify-between"
-                          >
-                            <div>
-                              <div className="font-bold text-white">
-                                {meal.name}
-                              </div>
+                    <button
+                      onClick={onClose}
+                      className="mt-2 bg-green-400 p-3 w-full text-black"
+                    >
+                      تطبيق
+                    </button>
+                  </>
+                )}
 
-                              <div className="text-sm text-gray-400 mono">
-                                {meal.time}
-                              </div>
-                            </div>
-
-                            <div className="text-[#FF6B35] mono font-bold">
-                              {meal.calories} kcal
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Workouts */}
-                    <div>
-                      <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                        <div className="w-1 h-6 bg-[#CCFF00]" />
-                        جدول التمارين الأسبوعي
-                      </h4>
-
-                      <div className="space-y-2">
-                        {plan.workouts.map((workout, index) => (
-                          <div
-                            key={index}
-                            className="bg-[#151935] border-l-4 border-[#CCFF00] p-4"
-                          >
-                            <div className="font-bold text-white mb-2">
-                              {workout.name}
-                            </div>
-
-                            <div className="flex items-center gap-4 text-sm text-gray-400 mono">
-                              <span>{workout.duration}</span>
-
-                              <span>•</span>
-
-                              <span>
-                                {workout.days.join(' • ')}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        onClick={handleReset}
-                        className="bg-[#151935] border-4 border-gray-700 hover:border-white text-white p-4 transition-colors"
-                      >
-                        <span className="mono font-bold">
-                          إنشاء خطة جديدة
-                        </span>
-                      </button>
-
-                      <button
-                        onClick={onClose}
-                        className="bg-[#CCFF00] border-4 border-black hover:bg-[#FF6B35] text-black p-4 transition-colors"
-                      >
-                        <span className="mono font-bold">
-                          تطبيق الخطة
-                        </span>
-                      </button>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Watch,
+  MessageSquare, 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
@@ -31,6 +32,7 @@ export default function UserLayout() {
     { icon: Watch, label: 'Device Sync', path: 'device-sync' },
     { icon: Bell, label: 'Notifications', path: 'notifications' },
     { icon: Settings, label: 'Settings', path: 'settings' },
+    { icon: MessageSquare, label: 'ChatBot', path: 'chatbot' },
   ];
 
   const handleLogout = async () => {

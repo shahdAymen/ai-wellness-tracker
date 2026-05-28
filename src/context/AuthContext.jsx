@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authAPI, setToken, getToken, removeToken } from '../API/api';
+import { authAPI } from "../API/auth.api";
+import { setToken, getToken, removeToken } from "../API/core/token";
 
 const AuthContext = createContext(null);
 
@@ -7,7 +8,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // INIT AUTH ON REFRESH
+  // INIT
   useEffect(() => {
     const token = getToken();
     const savedUser = localStorage.getItem('user');
@@ -22,7 +23,9 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // EMAIL/PASSWORD LOGIN
+  // ======================
+  // LOGIN
+  // ======================
   const login = async (email, password, isAdmin = false) => {
     const response = isAdmin
       ? await authAPI.adminLogin({ email, password })
@@ -39,7 +42,9 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // ======================
   // GOOGLE LOGIN
+  // ======================
   const loginWithGoogle = async (credential) => {
     const response = await authAPI.googleLogin({ credential });
 
@@ -54,26 +59,30 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // REGISTER
- // REGISTER
+  // ======================
+  // REGISTER (FIXED)
+  // ======================
   const register = async (data) => {
-  try {
-    await authAPI.register({
-      fullName: data.fullName,
-      email: data.email,
-      password: data.password,
-      confirmPassword: data.password,
-    });
+    try {
+      await authAPI.register({
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword, // ✅ FIXED
+      });
 
-    // login فقط لو التسجيل نجح
-    await login(data.email, data.password, false);
+      // login after success
+      await login(data.email, data.password, false);
 
-  } catch (error) {
-    console.error("Register failed:", error);
-    throw error;
-  }
-};
+    } catch (error) {
+      console.error("Register failed:", error);
+      throw error;
+    }
+  };
+
+  // ======================
   // LOGOUT
+  // ======================
   const logout = () => {
     setUser(null);
     removeToken();
@@ -98,7 +107,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-// USE AUTH HOOK
+// HOOK
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

@@ -73,9 +73,7 @@ export function Login() {
             Login
           </Button>
         </form>
-        <div className="mt-6">
-          <SocialLogin redirectPath="/app" />
-        </div>
+      
 
 
         <div className="mt-6 text-center">

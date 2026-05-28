@@ -1,9 +1,9 @@
-// App.jsx
 import React from 'react';
 import { Navigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/Shared/ProtectedRoute';
 import './styles/globals.css';
+
 // Layouts
 import UserLayout from './components/Layout/TemUserLayout';
 import AdminLayout from './components/Layout/AdminLayout';
@@ -30,6 +30,11 @@ import Settings from './pages/user/Settings';
 import DeviceSync from './pages/user/DeviceSync';
 
 // ===============================
+// NEW: CHATBOT PAGE
+// ===============================
+import ChatBot from './pages/user/ChatBot';
+
+// ===============================
 // ADMIN PAGES
 // ===============================
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -49,22 +54,37 @@ function AppRoutes() {
 
   return (
     <Routes>
+
       {/* ---------------- PUBLIC ---------------- */}
       <Route path="/" element={<LandingPage />} />
-      
+
       <Route
         path="/login"
         element={
-          isAuthenticated ? <Navigate to={isAdmin ? '/admin' : '/user'} replace /> : <Login />
+          isAuthenticated ? (
+            <Navigate to={isAdmin ? '/admin' : '/user'} replace />
+          ) : (
+            <Login />
+          )
         }
       />
+
       <Route
         path="/register"
-        element={isAuthenticated ? <Navigate to="/user" replace /> : <Register />}
+        element={
+          isAuthenticated ? <Navigate to="/user" replace /> : <Register />
+        }
       />
+
       <Route
         path="/admin/login"
-        element={isAuthenticated && isAdmin ? <Navigate to="/admin" replace /> : <AdminLogin />}
+        element={
+          isAuthenticated && isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <AdminLogin />
+          )
+        }
       />
 
       {/* ---------------- USER ---------------- */}
@@ -85,6 +105,9 @@ function AppRoutes() {
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
         <Route path="device-sync" element={<DeviceSync />} />
+
+        {/* ================= CHATBOT ================= */}
+        <Route path="chatbot" element={<ChatBot />} />
       </Route>
 
       {/* ---------------- ADMIN ---------------- */}
@@ -106,6 +129,7 @@ function AppRoutes() {
 
       {/* ---------------- FALLBACK ---------------- */}
       <Route path="*" element={<Navigate to="/" replace />} />
+
     </Routes>
   );
 }
@@ -114,5 +138,5 @@ function AppRoutes() {
 // APP ROOT
 // ===============================
 export default function App() {
-  return <AppRoutes />; // لا يوجد Router هنا
+  return <AppRoutes />;
 }

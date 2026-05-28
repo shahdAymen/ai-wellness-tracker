@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Utensils, Plus, Minus, CheckCircle } from 'lucide-react';
+import { X, Utensils, Plus, CheckCircle } from 'lucide-react';
+import { mealsAPI } from '../../API';
 
 export function LogMealModal({ isOpen, onClose }) {
   const [mealType, setMealType] = useState('');
@@ -19,10 +20,6 @@ export function LogMealModal({ isOpen, onClose }) {
     { id: 2, name: 'أرز', calories: 130, protein: 3, carbs: 28, fat: 0.3, unit: 'كوب' },
     { id: 3, name: 'دجاج مشوي', calories: 165, protein: 31, carbs: 0, fat: 3.6, unit: '100g' },
     { id: 4, name: 'سلمون', calories: 208, protein: 20, carbs: 0, fat: 13, unit: '100g' },
-    { id: 5, name: 'خبز أسمر', calories: 80, protein: 4, carbs: 15, fat: 1, unit: 'شريحة' },
-    { id: 6, name: 'موز', calories: 105, protein: 1.3, carbs: 27, fat: 0.4, unit: 'حبة' },
-    { id: 7, name: 'تفاح', calories: 95, protein: 0.5, carbs: 25, fat: 0.3, unit: 'حبة' },
-    { id: 8, name: 'لبن زبادي', calories: 100, protein: 10, carbs: 5, fat: 4, unit: 'كوب' },
   ];
 
   const addFood = (food) => {
@@ -31,34 +28,11 @@ export function LogMealModal({ isOpen, onClose }) {
     if (existing) {
       setSelectedFoods(
         selectedFoods.map((f) =>
-          f.id === food.id
-            ? { ...f, quantity: f.quantity + 1 }
-            : f
+          f.id === food.id ? { ...f, quantity: f.quantity + 1 } : f
         )
       );
     } else {
-      setSelectedFoods([
-        ...selectedFoods,
-        { ...food, quantity: 1 },
-      ]);
-    }
-  };
-
-  const removeFood = (foodId) => {
-    const existing = selectedFoods.find((f) => f.id === foodId);
-
-    if (existing && existing.quantity > 1) {
-      setSelectedFoods(
-        selectedFoods.map((f) =>
-          f.id === foodId
-            ? { ...f, quantity: f.quantity - 1 }
-            : f
-        )
-      );
-    } else {
-      setSelectedFoods(
-        selectedFoods.filter((f) => f.id !== foodId)
-      );
+      setSelectedFoods([...selectedFoods, { ...food, quantity: 1 }]);
     }
   };
 
@@ -72,15 +46,44 @@ export function LogMealModal({ isOpen, onClose }) {
     0
   );
 
-  const handleLogMeal = () => {
-    setIsLogged(true);
+  const handleLogMeal = async () => {
+    try {
+      setIsLogged(true);
 
-    setTimeout(() => {
-      onClose();
+      const totalCarbs = selectedFoods.reduce(
+        (sum, food) => sum + (food.carbs || 0) * food.quantity,
+        0
+      );
+
+      const totalFats = selectedFoods.reduce(
+        (sum, food) => sum + (food.fat || 0) * food.quantity,
+        0
+      );
+
+      const mealData = {
+        externalId: crypto.randomUUID(),
+        mealName: selectedFoods.map((food) => food.name).join(', '),
+        description: `Meal with ${selectedFoods.length} items`,
+        mealType: mealType,
+        calories: totalCalories,
+        protein: totalProtein,
+        carbs: totalCarbs,
+        fats: totalFats,
+      };
+
+      await mealsAPI.adminAddMeal(mealData);
+
+      setTimeout(() => {
+        onClose();
+        setIsLogged(false);
+        setMealType('');
+        setSelectedFoods([]);
+      }, 1200);
+
+    } catch (error) {
+      console.log('Meal Error:', error);
       setIsLogged(false);
-      setMealType('');
-      setSelectedFoods([]);
-    }, 2000);
+    }
   };
 
   return (
@@ -97,50 +100,31 @@ export function LogMealModal({ isOpen, onClose }) {
           />
 
           {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 50 }}
-            transition={{
-              type: 'spring',
-              damping: 25,
-              stiffness: 300,
-            }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0A0E27] border-4 border-[#CCFF00] shadow-[16px_16px_0px_0px_rgba(204,255,0,0.5)] z-50"
-          >
-            {/* Header */}
-            <div className="bg-[#CCFF00] p-6 border-b-4 border-black flex items-center justify-between sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <Utensils
-                  className="w-8 h-8 text-black"
-                  strokeWidth={2.5}
-                />
-                <h2 className="text-2xl font-black text-black mono">
-                  LOG MEAL
-                </h2>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[#0A0E27] border-4 border-[#CCFF00] shadow-[16px_16px_0px_0px_rgba(204,255,0,0.5)]"
+            >
+              {/* Header */}
+              <div className="bg-[#CCFF00] p-6 border-b-4 border-black flex items-center justify-between sticky top-0">
+                <div className="flex items-center gap-3">
+                  <Utensils className="w-8 h-8 text-black" />
+                  <h2 className="text-2xl font-black text-black">LOG MEAL</h2>
+                </div>
+
+                <button onClick={onClose}>
+                  <X className="w-6 h-6 text-black" />
+                </button>
               </div>
 
-              <button
-                onClick={onClose}
-                className="w-10 h-10 bg-black hover:bg-white transition-colors flex items-center justify-center"
-              >
-                <X
-                  className="w-6 h-6 text-[#CCFF00]"
-                  strokeWidth={2.5}
-                />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {!isLogged ? (
-                <>
-                  {/* Meal Types */}
-                  <div>
-                    <label className="block mono text-sm text-gray-400 mb-3">
-                      نوع الوجبة
-                    </label>
-
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {!isLogged ? (
+                  <>
+                    {/* Meal Types */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {mealTypes.map((type) => (
                         <button
@@ -148,202 +132,84 @@ export function LogMealModal({ isOpen, onClose }) {
                           onClick={() => setMealType(type.id)}
                           className={`p-4 border-4 transition-all ${
                             mealType === type.id
-                              ? 'bg-[#CCFF00] border-black'
-                              : 'bg-[#151935] border-gray-700 hover:border-[#CCFF00]'
+                              ? 'bg-[#CCFF00] text-black'
+                              : 'bg-[#151935] text-white'
                           }`}
                         >
-                          <div className="text-3xl mb-2">
-                            {type.icon}
-                          </div>
-
-                          <div
-                            className={`mono text-sm font-bold ${
-                              mealType === type.id
-                                ? 'text-black'
-                                : 'text-white'
-                            }`}
-                          >
-                            {type.name}
-                          </div>
+                          <div className="text-3xl">{type.icon}</div>
+                          <div className="text-sm font-bold">{type.name}</div>
                         </button>
                       ))}
                     </div>
-                  </div>
 
-                  {/* Food Selection */}
-                  {mealType && (
-                    <div>
-                      <label className="block mono text-sm text-gray-400 mb-3">
-                        اختر الأطعمة
-                      </label>
-
+                    {/* Foods */}
+                    {mealType && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {commonFoods.map((food) => (
                           <div
                             key={food.id}
-                            className="bg-[#151935] border-4 border-gray-700 hover:border-[#CCFF00] p-4 transition-colors"
+                            className="bg-[#151935] border-4 border-gray-700 p-4"
                           >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="font-bold text-white">
+                            <div className="flex justify-between">
+                              <div className="text-white font-bold">
                                 {food.name}
                               </div>
 
                               <button
                                 onClick={() => addFood(food)}
-                                className="w-8 h-8 bg-[#CCFF00] hover:bg-[#FF6B35] border-2 border-black transition-colors flex items-center justify-center"
+                                className="w-8 h-8 bg-[#CCFF00] flex items-center justify-center border-2 border-black"
                               >
-                                <Plus
-                                  className="w-4 h-4 text-black"
-                                  strokeWidth={3}
-                                />
+                                <Plus className="w-4 h-4 text-black" />
                               </button>
                             </div>
 
-                            <div className="flex items-center gap-3 text-xs text-gray-400 mono">
-                              <span>{food.calories} kcal</span>
-                              <span>•</span>
-                              <span>P:{food.protein}g</span>
-                              <span>•</span>
-                              <span>{food.unit}</span>
+                            <div className="text-gray-400 text-xs mt-2">
+                              {food.calories} kcal
                             </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Selected Foods */}
-                  {selectedFoods.length > 0 && (
-                    <div>
-                      <label className="block mono text-sm text-gray-400 mb-3">
-                        الأطعمة المحددة
-                      </label>
-
-                      <div className="space-y-2">
-                        {selectedFoods.map((food) => (
-                          <div
-                            key={food.id}
-                            className="bg-[#151935] border-l-4 border-[#CCFF00] p-4 flex items-center justify-between"
-                          >
-                            <div>
-                              <div className="font-bold text-white">
-                                {food.name}
-                              </div>
-
-                              <div className="text-sm text-gray-400 mono">
-                                {food.calories * food.quantity} kcal •{' '}
-                                {food.unit} × {food.quantity}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => removeFood(food.id)}
-                                className="w-8 h-8 bg-[#FF6B35] hover:bg-red-600 border-2 border-black transition-colors flex items-center justify-center"
-                              >
-                                <Minus
-                                  className="w-4 h-4 text-black"
-                                  strokeWidth={3}
-                                />
-                              </button>
-
-                              <span className="mono font-bold text-white w-8 text-center">
-                                {food.quantity}
-                              </span>
-
-                              <button
-                                onClick={() => addFood(food)}
-                                className="w-8 h-8 bg-[#CCFF00] hover:bg-[#4ECDC4] border-2 border-black transition-colors flex items-center justify-center"
-                              >
-                                <Plus
-                                  className="w-4 h-4 text-black"
-                                  strokeWidth={3}
-                                />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Summary */}
-                  {selectedFoods.length > 0 && (
-                    <div className="bg-[#151935] border-4 border-[#FF6B35] p-6">
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <div className="mono text-xs text-gray-400">
-                            إجمالي السعرات
-                          </div>
-
-                          <div className="text-4xl font-black text-[#FF6B35] mono">
-                            {totalCalories}
-                          </div>
-
-                          <div className="mono text-xs text-gray-400">
-                            kcal
-                          </div>
+                    {/* Selected */}
+                    {selectedFoods.length > 0 && (
+                      <div className="bg-[#151935] border-4 border-[#FF6B35] p-4">
+                        <div className="text-white mb-3 font-bold">
+                          Selected Foods
                         </div>
 
-                        <div>
-                          <div className="mono text-xs text-gray-400">
-                            البروتين
-                          </div>
-
-                          <div className="text-4xl font-black text-[#CCFF00] mono">
-                            {totalProtein.toFixed(1)}
-                          </div>
-
-                          <div className="mono text-xs text-gray-400">
-                            g
-                          </div>
+                        <div className="space-y-2">
+                          {selectedFoods.map((food) => (
+                            <div
+                              key={food.id}
+                              className="flex justify-between text-white"
+                            >
+                              <span>{food.name}</span>
+                              <span>{food.quantity}x</span>
+                            </div>
+                          ))}
                         </div>
-                      </div>
 
-                      <button
-                        onClick={handleLogMeal}
-                        disabled={!mealType}
-                        className="w-full bg-[#FF6B35] hover:bg-[#CCFF00] disabled:bg-gray-700 border-4 border-black p-4 transition-colors disabled:cursor-not-allowed"
-                      >
-                        <span className="mono font-bold text-black">
+                        <button
+                          onClick={handleLogMeal}
+                          className="w-full mt-4 bg-[#FF6B35] p-3 font-bold"
+                        >
                           تسجيل الوجبة
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="py-12 flex flex-col items-center justify-center"
-                >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{
-                      delay: 0.2,
-                      type: 'spring',
-                      stiffness: 200,
-                    }}
-                  >
-                    <CheckCircle
-                      className="w-24 h-24 text-[#CCFF00] mb-6"
-                      strokeWidth={2}
-                    />
-                  </motion.div>
-
-                  <h3 className="text-3xl font-black text-white mb-2">
-                    تم التسجيل بنجاح!
-                  </h3>
-
-                  <p className="text-gray-400 mono">
-                    تمت إضافة {totalCalories} سعرة حرارية
-                  </p>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="py-12 flex flex-col items-center">
+                    <CheckCircle className="w-20 h-20 text-[#CCFF00]" />
+                    <h3 className="text-2xl text-white font-bold mt-4">
+                      تم التسجيل!
+                    </h3>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

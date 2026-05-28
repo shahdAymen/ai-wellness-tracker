@@ -1,201 +1,365 @@
 import React, { useEffect, useState } from 'react';
 import {
   Flame,
-  Zap,
   Droplets,
   Utensils,
-  Dumbbell,
-  Watch,
-  CheckCircle
+  CheckCircle,
+  Loader2,
+  MessageCircle
 } from 'lucide-react';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
+
+import ChatBot from './ChatBot';
 
 import { Card } from '../../components/UI/Card';
 import { ProgressCircle } from '../../components/UI/ProgressCircles';
 import Button from '../../components/UI/Button';
 
-// ✅ MODALS IMPORTS
+// MODALS
 import { GeneratePlanModal } from '../../components/Modals/GeneratePlanModal';
 import { LogMealModal } from '../../components/Modals/LogMealModal';
 import { TrackWorkoutModal } from '../../components/Modals/TrackWorkoutModal';
 
+// API
+import {
+  dashboardAPI,
+  mealsAPI,
+  workoutAPI
+} from '../../API';
+
 export function UserDashboard() {
   const [mounted, setMounted] = useState(false);
 
-  // ✅ MODAL STATES
+  // MODALS
   const [planOpen, setPlanOpen] = useState(false);
   const [mealOpen, setMealOpen] = useState(false);
   const [workoutOpen, setWorkoutOpen] = useState(false);
 
+  // CHATBOT
+  const [chatOpen, setChatOpen] = useState(false);
+
+  // DATA
+  const [dashboardData, setDashboardData] = useState(null);
+  const [todayMeals, setTodayMeals] = useState([]);
+  const [workouts, setWorkouts] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [workoutsLoading, setWorkoutsLoading] = useState(false);
+
+  // =========================
+  // INIT
+  // =========================
   useEffect(() => {
     setMounted(true);
+    fetchDashboardData();
+    fetchWorkouts();
   }, []);
 
+  // =========================
+  // DASHBOARD DATA
+  // =========================
+  const fetchDashboardData = async () => {
+    try {
+      const [dashboard, meals] = await Promise.allSettled([
+        dashboardAPI.getUserDashboard(),
+        mealsAPI.getToday(),
+      ]);
+
+      if (dashboard.status === 'fulfilled') {
+        setDashboardData(dashboard.value);
+      }
+
+      if (meals.status === 'fulfilled') {
+        setTodayMeals(
+          Array.isArray(meals.value)
+            ? meals.value.slice(0, 3)
+            : []
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =========================
+  // WORKOUTS
+  // =========================
+  const fetchWorkouts = async () => {
+    setWorkoutsLoading(true);
+
+    try {
+      const data = await workoutAPI.getAll();
+      setWorkouts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setWorkouts([]);
+    } finally {
+      setWorkoutsLoading(false);
+    }
+  };
+
+  // =========================
+  // COMPLETE MEAL
+  // =========================
+  const handleCompleteMeal = async (mealPlanId) => {
+    if (!mealPlanId) return;
+
+    try {
+      await mealsAPI.completeMeal(mealPlanId);
+
+      setTodayMeals((prev) =>
+        prev.map((m) =>
+          m.mealPlanId === mealPlanId || m.id === mealPlanId
+            ? { ...m, isCompleted: true }
+            : m
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // =========================
+  // STATS
+  // =========================
   const stats = {
-    calories: { current: 1450, target: 2200 },
-    burned: { current: 450, target: 600 },
-    hydration: { current: 1250, target: 3500 },
-  };
-
-  const upNext = [
-    {
-      id: 1,
-      icon: Utensils,
-      name: 'Salmon Quinoa Bowl',
-      time: '12:00 PM',
-      calories: '450 kcal',
-      color: 'text-orange-500',
-      borderColor: 'border-orange-500',
+    calories: {
+      current: dashboardData?.calories ?? 0,
+      target: dashboardData?.caloriesTarget ?? 2200,
     },
-    {
-      id: 2,
-      icon: Dumbbell,
-      name: 'HIIT Cardio Blast',
-      time: '17:30 PM',
-      calories: '30 mins',
-      color: 'text-red-500',
-      borderColor: 'border-red-500',
-    },
-  ];
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
+    burned: {
+      current: 0,
+      target: 600,
+    },
+
+    hydration: {
+      current: dashboardData?.water ?? 0,
+      target: dashboardData?.waterTarget ?? 3500,
     },
   };
 
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  };
+  // =========================
+  // UP NEXT
+  // =========================
+  const upNext =
+    todayMeals.length > 0
+      ? todayMeals
+          .filter((m) => !m.isCompleted)
+          .map((meal, i) => ({
+            id: meal.mealPlanId ?? meal.id,
+            icon: Utensils,
+            name: meal.name,
+            time: meal.time ?? '—',
+            calories: `${meal.calories} kcal`,
+            color: i % 2 === 0 ? 'text-orange-500' : 'text-lime-400',
+            borderColor:
+              i % 2 === 0
+                ? 'border-orange-500'
+                : 'border-lime-400',
+
+            mealPlanId: meal.mealPlanId ?? meal.id,
+          }))
+      : [];
 
   return (
     <>
       <motion.div
-        variants={container}
-        initial="hidden"
-        animate={mounted ? 'show' : 'hidden'}
         className="space-y-6 p-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
       >
+        {/* HEADER */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-black">
+            TODAY
+          </h1>
 
-        {/* Stats */}
+          <div className="text-sm text-gray-400">
+            Wellness Dashboard
+          </div>
+        </div>
+
+        {/* STATS */}
         <div className="grid md:grid-cols-3 gap-6">
-          {[ 
-            { icon: Utensils, label: 'Calories', data: stats.calories, color: '#f97316' },
-            { icon: Flame, label: 'Burned', data: stats.burned, color: '#ef4444' },
-            { icon: Droplets, label: 'Hydration', data: stats.hydration, color: '#3b82f6' },
-          ].map((itemData, i) => {
-            const Icon = itemData.icon;
+          {[
+            {
+              icon: Utensils,
+              label: 'Calories',
+              data: stats.calories,
+            },
+
+            {
+              icon: Flame,
+              label: 'Burned',
+              data: stats.burned,
+            },
+
+            {
+              icon: Droplets,
+              label: 'Hydration',
+              data: stats.hydration,
+            },
+          ].map((s, i) => {
+            const Icon = s.icon;
 
             return (
-              <motion.div key={i} variants={item}>
-                <Card>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5" />
-                      <div>
-                        <p className="text-xs uppercase">{itemData.label}</p>
-                        <p className="text-2xl">
-                          {itemData.data.current}{' '}
-                          <span className="text-sm text-gray-500">
-                            / {itemData.data.target}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
+              <Card key={i}>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <Icon className="mb-2" />
 
-                    <ProgressCircle
-                      value={itemData.data.current}
-                      max={itemData.data.target}
-                      color={itemData.color}
-                    />
+                    <p className="text-sm text-gray-400">
+                      {s.label}
+                    </p>
+
+                    <p className="text-2xl font-bold">
+                      {s.data.current}
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      / {s.data.target}
+                    </p>
                   </div>
-                </Card>
-              </motion.div>
+
+                  <ProgressCircle
+                    value={s.data.current}
+                    max={s.data.target}
+                  />
+                </div>
+              </Card>
             );
           })}
         </div>
 
-        {/* Up Next */}
-        <motion.div variants={item}>
-          <Card>
-            <h3 className="mb-4">Up Next</h3>
+        {/* WORKOUTS */}
+        <Card>
+          <h3 className="mb-4 text-xl font-bold">
+            Workouts
+          </h3>
 
-            <div className="space-y-4">
-              {upNext.map((task) => {
-                const Icon = task.icon;
-
-                return (
-                  <div
-                    key={task.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border-l-4 ${task.borderColor}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <Icon className={`w-6 h-6 ${task.color}`} />
-                      <div>
-                        <p>{task.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {task.calories} • {task.time}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button>
-                      <CheckCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                );
-              })}
+          {workoutsLoading ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="animate-spin" />
             </div>
-          </Card>
-        </motion.div>
+          ) : workouts.length === 0 ? (
+            <p className="text-gray-400">
+              No workouts yet
+            </p>
+          ) : (
+            workouts.slice(0, 5).map((w) => (
+              <div
+                key={w.id}
+                className="flex justify-between items-center p-3 border-b border-white/10"
+              >
+                <div>
+                  <p className="font-semibold">
+                    {w.exerciseName}
+                  </p>
 
-        {/* Device */}
-        <motion.div variants={item}>
-          <Card>
-            <div className="flex justify-between mb-4">
-              <div className="flex gap-2 items-center">
-                <Watch className="w-5 h-5" />
-                <span>Device Sync</span>
+                  <p className="text-xs text-gray-500">
+                    {w.duration} min •{' '}
+                    {w.caloriesBurned} kcal
+                  </p>
+                </div>
+
+                <CheckCircle className="text-green-500" />
               </div>
+            ))
+          )}
+        </Card>
 
-              <span className="text-green-500 text-xs">LIVE</span>
-            </div>
+        {/* UP NEXT */}
+        <Card>
+          <h3 className="mb-4 text-xl font-bold">
+            Up Next
+          </h3>
 
-            <div className="grid grid-cols-3 text-center">
-              <div><p className="text-2xl">112</p><p className="text-xs">BPM</p></div>
-              <div><p className="text-2xl">8.4k</p><p className="text-xs">Steps</p></div>
-              <div><p className="text-2xl">7h</p><p className="text-xs">Sleep</p></div>
-            </div>
-          </Card>
-        </motion.div>
+          {upNext.length === 0 ? (
+            <p className="text-gray-400">
+              No meals remaining today
+            </p>
+          ) : (
+            upNext.map((task) => {
+              const Icon = task.icon;
 
-        {/* Buttons */}
+              return (
+                <div
+                  key={task.id}
+                  className={`flex justify-between items-center p-3 border-l-4 mb-3 rounded-xl bg-white/5 ${task.borderColor}`}
+                >
+                  <div className="flex gap-3 items-center">
+                    <Icon className={task.color} />
+
+                    <div>
+                      <p className="font-semibold">
+                        {task.name}
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        {task.calories} • {task.time}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      handleCompleteMeal(task.mealPlanId)
+                    }
+                  >
+                    <CheckCircle className="hover:text-green-500 transition" />
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </Card>
+
+        {/* ACTION BUTTONS */}
         <div className="grid md:grid-cols-3 gap-4">
-
           <Button onClick={() => setPlanOpen(true)}>
-            <Zap className="w-5 h-5" />
-            Generate AI Plan
+            AI Plan
           </Button>
 
           <Button onClick={() => setMealOpen(true)}>
-            <Utensils className="w-5 h-5" />
-            Log Meal
+            Meal
           </Button>
 
           <Button onClick={() => setWorkoutOpen(true)}>
-            <Dumbbell className="w-5 h-5" />
-            Track Workout
+            Workout
           </Button>
-
         </div>
-
       </motion.div>
 
-      {/* ✅ MODALS */}
+      {/* CHATBOT FLOATING BUTTON */}
+      <div className="fixed bottom-6 right-6 z-50">
+        {!chatOpen ? (
+          <button
+            onClick={() => setChatOpen(true)}
+            className="bg-lime-400 hover:bg-lime-300 text-black p-4 rounded-full shadow-2xl transition-all duration-300"
+          >
+            <MessageCircle size={28} />
+          </button>
+        ) : (
+          <div className="relative">
+            <div className="w-[370px] h-[600px] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-[#111]">
+              <ChatBot />
+            </div>
+
+            <button
+              onClick={() => setChatOpen(false)}
+              className="absolute -top-3 -right-3 bg-red-500 w-8 h-8 rounded-full text-white font-bold"
+            >
+              ×
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* MODALS */}
       <GeneratePlanModal
         isOpen={planOpen}
         onClose={() => setPlanOpen(false)}
@@ -208,7 +372,10 @@ export function UserDashboard() {
 
       <TrackWorkoutModal
         isOpen={workoutOpen}
-        onClose={() => setWorkoutOpen(false)}
+        onClose={() => {
+          setWorkoutOpen(false);
+          fetchWorkouts();
+        }}
       />
     </>
   );

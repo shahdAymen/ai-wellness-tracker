@@ -1,15 +1,17 @@
 export const authConfig = {
-  // BACKEND API 
-  apiBaseUrl: "https://vetalityai-production.up.railway.app",
+  // BACKEND API
+  apiBaseUrl: "https://vetalityai.onrender.com/api",
+  apiRootUrl: "https://vetalityai.onrender.com/api",
 
-  // GOOGLE SIGN-IN
+  // GOOGLE SIGN-IN (NEW CLIENT ID)
   google: {
-    clientId: "454689813031-e64siip5h5prliemgjmqqg82smj9q870.apps.googleusercontent.com",
+    clientId:
+      "900871545340-3450fr1jfloec2m9ur3kumef4e0dd5tq.apps.googleusercontent.com",
   },
 
-  // FACEBOOK LOGIN (UI ONLY)
+  // FACEBOOK LOGIN (NOT READY YET)
   facebook: {
-    appId: "YOUR_FACEBOOK_APP_ID",
+    appId: "", // سيبيه فاضي أو حطيه بعدين
     version: "v18.0",
   },
 
@@ -22,7 +24,7 @@ export const authConfig = {
 };
 
 // ===============================
-// HELPERS (مهم جدًا)
+// HELPERS
 // ===============================
 
 export const getApiBaseUrl = () => authConfig.apiBaseUrl;
@@ -30,3 +32,5 @@ export const getApiBaseUrl = () => authConfig.apiBaseUrl;
 export const getGoogleClientId = () => authConfig.google.clientId;
 
 export const getFacebookAppId = () => authConfig.facebook.appId;
+
+export const getApiRootUrl = () => authConfig.apiRootUrl;
