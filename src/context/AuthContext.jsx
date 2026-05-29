@@ -1,145 +1,161 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authAPI } from "../API/auth.api";
-import { setToken, getToken, removeToken } from "../API/core/token";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { authAPI, clearAuthSession, getAuthSession, setAuthSession, setStoredUser, userAPI } from '../services/api';
 
 const AuthContext = createContext(null);
+
+function normalizeRoles(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+}
+
+function mergeUser(profile, sessionUser, roles) {
+  const mergedRoles = normalizeRoles(roles?.length ? roles : sessionUser?.roles);
+
+  return {
+    ...sessionUser,
+    ...profile,
+    name: profile?.fullName || sessionUser?.fullName || sessionUser?.name || profile?.email,
+    fullName: profile?.fullName || sessionUser?.fullName || sessionUser?.name,
+    email: profile?.email || sessionUser?.email,
+    roles: mergedRoles,
+  };
+}
+
+function profileIsComplete(profile) {
+  return Boolean(
+    profile?.gender &&
+      profile?.birthDate &&
+      profile?.height &&
+      profile?.weight &&
+      profile?.activityLevel &&
+      profile?.goal
+  );
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ======================
-  // INIT (FIXED SAFE JSON)
-  // ======================
-  useEffect(() => {
-    const token = getToken();
-    const savedUser = localStorage.getItem('user');
+  const hydrateUser = useCallback(async (fallbackAuthPayload) => {
+    const session = getAuthSession();
+    const roles = normalizeRoles(fallbackAuthPayload?.roles || session.roles);
 
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Invalid user in localStorage");
-        removeToken();
-        localStorage.removeItem('user');
+    try {
+      const profile = await userAPI.getMe();
+      const merged = mergeUser(profile, fallbackAuthPayload || session.user, roles);
+      setStoredUser(merged);
+      setUser(merged);
+      return merged;
+    } catch {
+      const fallback = mergeUser(fallbackAuthPayload, session.user, roles);
+      if (fallback?.email) {
+        setStoredUser(fallback);
+        setUser(fallback);
+        return fallback;
       }
-    } else {
-      removeToken();
-      localStorage.removeItem('user');
+      throw new Error('Unable to restore session.');
     }
-
-    setLoading(false);
   }, []);
 
-  // ======================
-  // LOGIN
-  // ======================
-  const login = async (email, password, isAdmin = false) => {
-    const response = isAdmin
-      ? await authAPI.adminLogin({ email, password })
-      : await authAPI.login({ email, password });
+  useEffect(() => {
+    let mounted = true;
 
-    const userData = {
-      name: response.name || email,
-      email,
-      role: response.role,
-    };
+    async function restoreSession() {
+      const session = getAuthSession();
 
-    setToken(response.token);
-    setUser(userData);
+      if (!session.token) {
+        clearAuthSession();
+        if (mounted) setLoading(false);
+        return;
+      }
 
-    localStorage.setItem(
-      'user',
-      JSON.stringify(userData)
-    );
-  };
-
-  // ======================
-  // GOOGLE LOGIN
-  // ======================
-  const loginWithGoogle = async (credential) => {
-    const response = await authAPI.googleLogin({
-      credential,
-    });
-
-    const userData = {
-      name: response.name,
-      email: response.email,
-      role: response.role,
-    };
-
-    setToken(response.token);
-    setUser(userData);
-
-    localStorage.setItem(
-      'user',
-      JSON.stringify(userData)
-    );
-  };
-
-  // ======================
-  // REGISTER
-  // ======================
-  const register = async (data) => {
-    try {
-      await authAPI.register({
-        fullName: data.fullName,
-        email: data.email,
-        password: data.password,
-        confirmPassword: data.confirmPassword,
-      });
-
-      // Automatically login the user after successful registration
-      await login(data.email, data.password);
-      return true;
-
-    } catch (error) {
-      console.error("Register failed:", error);
-      throw error;
+      try {
+        const restored = await hydrateUser();
+        if (mounted) setUser(restored);
+      } catch {
+        clearAuthSession();
+        if (mounted) setUser(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-  };
 
-  // ======================
-  // LOGOUT
-  // ======================
-  const logout = () => {
-    setUser(null);
-    removeToken();
-    localStorage.removeItem('user');
-  };
+    restoreSession();
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
+    const onExpired = () => {
+      setUser(null);
+      setLoading(false);
+    };
 
-        isAuthenticated: !!user,
+    window.addEventListener('vitalityai:auth-expired', onExpired);
+    return () => {
+      mounted = false;
+      window.removeEventListener('vitalityai:auth-expired', onExpired);
+    };
+  }, [hydrateUser]);
 
-        // FIX SAFE ADMIN CHECK
-        isAdmin: user?.role?.toLowerCase?.() === 'admin',
-
-        login,
-        loginWithGoogle,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const login = useCallback(
+    async (email, password) => {
+      const authPayload = await authAPI.login({ email, password });
+      setAuthSession(authPayload);
+      return hydrateUser(authPayload);
+    },
+    [hydrateUser]
   );
+
+  const register = useCallback(
+    async ({ fullName, email, password }) => {
+      const authPayload = await authAPI.register({ fullName, email, password });
+      setAuthSession(authPayload);
+      return hydrateUser(authPayload);
+    },
+    [hydrateUser]
+  );
+
+  const refreshMe = useCallback(() => hydrateUser(), [hydrateUser]);
+
+  const logout = useCallback(async () => {
+    const { token, refreshToken } = getAuthSession();
+    try {
+      if (token && refreshToken) {
+        await authAPI.revokeRefreshToken({ token, refreshToken });
+      }
+    } catch {
+      // Logout should always clear local state even when revoke fails.
+    } finally {
+      clearAuthSession();
+      setUser(null);
+    }
+  }, []);
+
+  const roles = normalizeRoles(user?.roles);
+  const isAdmin = roles.some((role) => role?.toLowerCase?.() === 'admin');
+
+  const value = useMemo(
+    () => ({
+      user,
+      roles,
+      loading,
+      isAuthenticated: Boolean(user),
+      isAdmin,
+      hasCompletedProfile: profileIsComplete(user),
+      login,
+      register,
+      logout,
+      refreshMe,
+    }),
+    [user, roles, loading, isAdmin, login, register, logout, refreshMe]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// ======================
-// HOOK
-// ======================
 export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error(
-      'useAuth must be used inside AuthProvider'
-    );
+    throw new Error('useAuth must be used inside AuthProvider');
   }
 
   return context;

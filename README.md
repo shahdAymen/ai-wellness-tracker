@@ -1,54 +1,29 @@
-# 🏋️ VitalityAI - AI Wellness Tracker Platform
+# VitalityAI Frontend
 
-منصة شاملة للياقة البدنية والصحة مدعومة بالذكاء الاصطناعي، تحتوي على 23 صفحة متكاملة لتتبع الصحة والتغذية والتمارين الرياضية.
+Production frontend for the VitalityAI wellness platform.
 
-## ✨ المميزات الرئيسية
+## Backend
 
-### 🔐 نظام مصادقة متطور
-- تسجيل دخول بالبريد الإلكتروني وكلمة المرور
-- تسجيل دخول بحساب Google
-- تسجيل دخول بحساب Facebook
-- لوحة تحكم منفصلة للمديرين (Admin Panel)
-- JWT Token-based authentication
-- استعادة كلمة المرور
+- Base URL: `https://vetalityai.onrender.com/api`
+- Swagger: `https://vetalityai.onrender.com/swagger`
+- Environment variable: `VITE_API_BASE_URL`
 
-### 👤 صفحات المستخدمين
-- **Dashboard**: لوحة تحكم مع إحصائيات يومية (سعرات، ماء، تمارين)
-- **Tracker**: تسجيل الوجبات والأنشطة
-- **Analytics**: رسوم بيانية تفاعلية لتتبع التقدم
-- **Restaurants**: دليل المطاعم الصحية
-- **Protocol**: برامج تمارين مخصصة
-- **Device Sync**: مزامنة مع الأجهزة الذكية
-- **Notifications**: إشعارات وتذكيرات
-- **Settings**: إعدادات الحساب والتفضيلات
-- **Complete Profile**: إكمال الملف الشخصي
+## Supported Features
 
-### 🛡️ Admin Panel
-- **Dashboard**: لوحة تحكم شاملة
-- **Manage Users**: إدارة المستخدمين
-- **Manage Recipes**: إدارة الوصفات
-- **Manage Workouts**: إدارة التمارين
-- **Manage Restaurants**: إدارة المطاعم
-- **System Analytics**: تحليلات النظام
+- JWT login, registration, session restore, refresh-token retry, logout/revoke
+- Profile setup using activity-level and goal lookups
+- User dashboard with live dashboard, meal, stat, water, and Google Fit summaries
+- AI meal-plan generation and weekly/monthly planner views
+- Daily metrics, hydration, and meal completion tracking
+- Nearby restaurant discovery using browser geolocation
+- Admin dashboard, users, meals, restaurants, and workout management
 
-### 🌐 صفحات عامة
-- **Landing Page**: الصفحة الرئيسية
-- **Login/Register**: صفحات التسجيل ودخول
-- **Admin Login**: صفحة دخول المديرين
+Unsupported backend features such as notifications, chatbot APIs, and workout completion are not exposed in the UI.
 
-### 🎨 التصميم
-- تصميم عصري وجذاب
-- دعم كامل لـ Dark Mode
-- Responsive Design (متوافق مع جميع الأجهزة)
-- استخدام Tailwind CSS v4
-- مكونات UI قابلة لإعادة الاستخدام
+## Commands
 
-## 🚀 البدء السريع
-
-### المتطلبات
-- Node.js (v16 أو أحدث)
-- Backend API يعمل على `http://localhost:5009`
-
-### 1. التثبيت
 ```bash
 npm install
+npm run dev
+npm run build
+```

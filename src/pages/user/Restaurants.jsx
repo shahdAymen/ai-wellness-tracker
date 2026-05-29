@@ -1,194 +1,169 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Search,
-  MapPin,
-  Star,
-  Leaf,
-  Loader2,
-  Navigation,
-  Phone,
-} from 'lucide-react';
-
-import { restaurantAPI } from '../../API';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Globe, Loader2, MapPin, Navigation, Phone, RefreshCw, Search } from 'lucide-react';
+import Button from '../../components/UI/Button';
+import { Card } from '../../components/UI/Card';
+import { EmptyState, ErrorState } from '../../components/UI/StatusStates';
+import { restaurantAPI } from '../../services/api';
 
 export default function Restaurants() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [query, setQuery] = useState('');
+  const [coords, setCoords] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [locationError, setLocationError] = useState('');
-  const [userCoords, setUserCoords] = useState(null);
-  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    requestLocation();
-  }, []);
+  const loadRestaurants = useCallback(async (location = coords) => {
+    if (!location) return;
 
-  const requestLocation = () => {
     setLoading(true);
-    setLocationError('');
-
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation not supported');
-      setLoading(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-
-        setUserCoords(coords);
-        fetchNearbyRestaurants(coords.lat, coords.lng);
-      },
-      (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
-          setPermissionDenied(true);
-          setLocationError('Location denied, using Cairo');
-
-          fetchNearbyRestaurants(30.0444, 31.2357);
-        } else {
-          setLocationError('Unable to get location');
-          setLoading(false);
-        }
-      }
-    );
-  };
-
-  const fetchNearbyRestaurants = async (lat, lng) => {
-    setLoading(true);
-
+    setError(null);
     try {
-      const data = await restaurantAPI.getNearby(lat, lng);
-      setRestaurants(Array.isArray(data) ? data : []);
+      const data = await restaurantAPI.getNearby(location.lat, location.lng);
+      setRestaurants(Array.isArray(data?.restaurants) ? data.restaurants : []);
     } catch (err) {
-      console.error(err);
+      setError(err);
       setRestaurants([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [coords]);
 
-  const filtered = restaurants.filter((r) => {
-    const q = searchQuery.toLowerCase();
+  const requestLocation = useCallback(() => {
+    setError(null);
 
-    return (
-      !q ||
-      r.name?.toLowerCase().includes(q) ||
-      r.cuisine?.toLowerCase().includes(q)
+    if (!navigator.geolocation) {
+      setError(new Error('Browser geolocation is not supported on this device.'));
+      return;
+    }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const nextCoords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setCoords(nextCoords);
+        await loadRestaurants(nextCoords);
+      },
+      (locationError) => {
+        setLoading(false);
+        setError(new Error(locationError.message || 'Location permission is required to find nearby restaurants.'));
+      },
+      { enableHighAccuracy: true, timeout: 12000 }
     );
-  });
+  }, [loadRestaurants]);
+
+  useEffect(() => {
+    requestLocation();
+  }, [requestLocation]);
+
+  const filtered = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return restaurants;
+    return restaurants.filter((restaurant) =>
+      [restaurant.name, restaurant.category, restaurant.cuisine_type, restaurant.address, restaurant.area]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(normalized))
+    );
+  }, [query, restaurants]);
 
   return (
-    <div className="min-h-screen bg-[#0A0E27] text-white p-4 space-y-6">
-
-      {/* Header */}
-      <div>
-        <h1 className="text-4xl font-black">RESTAURANTS</h1>
-        <p className="text-gray-400 text-xs">HEALTHY FOOD NEAR YOU</p>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Restaurants</p>
+          <h1 className="mt-2 text-3xl font-bold text-white">Healthy places near you</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Uses browser geolocation and the documented nearby restaurant endpoint.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={() => (coords ? loadRestaurants(coords) : requestLocation())} disabled={loading}>
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button onClick={requestLocation} disabled={loading}>
+            <Navigation className="h-4 w-4" />
+            Use my location
+          </Button>
+        </div>
       </div>
 
-      {/* Search + Location */}
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-3 text-gray-500 w-4 h-4" />
-
+      <Card className="border border-slate-700 bg-slate-900">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="w-full pl-10 py-3 bg-[#151935] border border-gray-700 text-white"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by name, category, cuisine, or area"
+            className="w-full rounded-lg border border-slate-700 bg-slate-950 py-3 pl-11 pr-4 text-white"
           />
         </div>
+      </Card>
 
-        <button
-          onClick={requestLocation}
-          className="border border-cyan-400 text-cyan-400 px-4"
-        >
-          <Navigation className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Error */}
-      {locationError && (
-        <div className="text-yellow-400 text-xs border border-yellow-500 p-2">
-          {locationError}
-        </div>
-      )}
-
-      {/* Loading */}
       {loading && (
-        <div className="flex gap-2 text-gray-400">
-          <Loader2 className="animate-spin w-4 h-4" />
-          Loading restaurants...
+        <div className="flex items-center gap-2 text-slate-300">
+          <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+          Finding nearby restaurants...
         </div>
       )}
 
-      {/* Results */}
-      {!loading && (
-        <>
-          {filtered.length === 0 ? (
-            <div className="text-gray-500 text-center p-10">
-              No restaurants found
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-3">
+      {error && <ErrorState message={error.message} onRetry={requestLocation} />}
 
-              {filtered.map((r) => (
-                <div
-                  key={r.id}
-                  className="border border-gray-700 p-4 hover:border-cyan-400"
-                >
-
-                  {/* Name */}
-                  <div className="flex justify-between">
-                    <div>
-                      <h3>{r.name}</h3>
-                      <p className="text-xs text-gray-400">{r.cuisine}</p>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-400" />
-                      <span>{r.rating}</span>
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex gap-3 text-xs text-gray-400 mt-2">
-                    <span>
-                      <MapPin className="w-3 h-3 inline" /> {r.distanceMeters
-                        ? `${(r.distanceMeters / 1000).toFixed(1)} km`
-                        : r.distance}
-                    </span>
-
-                    <span className="text-green-400 flex items-center gap-1">
-                      <Leaf className="w-3 h-3" />
-                      {r.healthyOptions}
-                    </span>
-                  </div>
-
-                  {/* Address */}
-                  {r.address && (
-                    <p className="text-xs text-gray-600 mt-2">
-                      {r.address}
-                    </p>
-                  )}
-
-                  {/* Phone */}
-                  {r.phone && (
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                      <Phone className="w-3 h-3" />
-                      {r.phone}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+      {!loading && !error && filtered.length === 0 && (
+        <EmptyState title="No restaurants found" message="Try refreshing after allowing location access." />
       )}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {filtered.map((restaurant) => (
+          <Card key={restaurant.id || restaurant.name} className="border border-slate-700 bg-slate-900">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">{restaurant.name}</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  {restaurant.category || 'Restaurant'} · {restaurant.cuisine_type || 'Cuisine'}
+                </p>
+              </div>
+              {restaurant.distance_km != null && (
+                <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-semibold text-emerald-300">
+                  {Number(restaurant.distance_km).toFixed(1)} km
+                </span>
+              )}
+            </div>
+
+            <div className="mt-5 space-y-3 text-sm text-slate-300">
+              {restaurant.address && (
+                <div className="flex gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 text-emerald-400" />
+                  <span>
+                    {restaurant.address}
+                    {restaurant.area ? `, ${restaurant.area}` : ''}
+                    {restaurant.city ? `, ${restaurant.city}` : ''}
+                  </span>
+                </div>
+              )}
+              {restaurant.phone && (
+                <div className="flex gap-2">
+                  <Phone className="mt-0.5 h-4 w-4 text-emerald-400" />
+                  <span>{restaurant.phone}</span>
+                </div>
+              )}
+              {restaurant.website && (
+                <a
+                  href={restaurant.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-emerald-300 hover:text-emerald-200"
+                >
+                  <Globe className="h-4 w-4" />
+                  Website
+                </a>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

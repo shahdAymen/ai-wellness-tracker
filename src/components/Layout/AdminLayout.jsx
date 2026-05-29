@@ -6,7 +6,6 @@ import {
   UtensilsCrossed,
   Dumbbell,
   Store,
-  BarChart3,
   LogOut,
   Menu,
   X,
@@ -14,12 +13,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
+import { useGlobalLoading } from '../../context/LoadingContext';
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { isApiLoading } = useGlobalLoading();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -27,7 +28,6 @@ export default function AdminLayout() {
     { icon: UtensilsCrossed, label: 'Manage Recipes', path: '/admin/recipes' },
     { icon: Dumbbell, label: 'Manage Workouts', path: '/admin/workouts' },
     { icon: Store, label: 'Manage Restaurants', path: '/admin/restaurants' },
-    { icon: BarChart3, label: 'System Analytics', path: '/admin/analytics' },
   ];
 
   const handleLogout = () => {
@@ -120,6 +120,7 @@ export default function AdminLayout() {
             </div>
           </div>
         </header>
+        {isApiLoading && <div className="h-1 w-full bg-emerald-500/80" />}
 
         {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto transition-colors duration-300">

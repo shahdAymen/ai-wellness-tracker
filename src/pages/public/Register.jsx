@@ -74,10 +74,9 @@ export default function Register() {
         fullName: formData.name,
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
       });
 
-      navigate("/user");
+      navigate("/user/complete-profile", { replace: true });
     } catch (error) {
       console.error(error);
       setGeneralError(error.message || "Registration failed. Please check details and try again.");

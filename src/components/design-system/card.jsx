@@ -80,13 +80,3 @@ export function CardFooter({ className, ...props }) {
   );
 }
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-};
-

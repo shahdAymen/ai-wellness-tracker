@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Production VitalityAI frontend integrated with the live backend API.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.16.1",
     "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.556.0",
@@ -28,18 +30,5 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "vite": "^7.2.4"
-  },
-  "description": "منصة شاملة للياقة البدنية والصحة مدعومة بالذكاء الاصطناعي، تحتوي على 23 صفحة متكاملة لتتبع الصحة والتغذية والتمارين الرياضية.",
-  "main": "eslint.config.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/shahdAymen/ai-wellness-tracker.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/shahdAymen/ai-wellness-tracker/issues"
-  },
-  "homepage": "https://github.com/shahdAymen/ai-wellness-tracker#readme"
+  }
 }

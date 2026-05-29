@@ -20,7 +20,7 @@ export function Button({
     ghost:
       'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
     danger:
-     'bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:active:bg-emerald-800',
+      'bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white dark:bg-rose-600 dark:hover:bg-rose-700',
     
   };
 

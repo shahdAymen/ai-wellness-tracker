@@ -1,67 +1,145 @@
-import React from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Card } from '../../components/UI/Card';
+import React, { useEffect, useState } from 'react';
+import { Dumbbell, Plus, Save } from 'lucide-react';
 import Button from '../../components/UI/Button';
+import { Card } from '../../components/UI/Card';
+import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
+import { useToast } from '../../context/ToastContext';
+import { workoutAPI } from '../../services/api';
+
+const emptyWorkout = {
+  exercisedId: '',
+  sets: '',
+  reps: '',
+  date: new Date().toISOString().slice(0, 10),
+};
 
 export default function ManageWorkouts() {
-  const workouts = [
-    { id: 1, name: 'HIIT Cardio Blast', duration: 30, difficulty: 'Advanced', calories: 350 },
-    { id: 2, name: 'Beginner Yoga Flow', duration: 45, difficulty: 'Beginner', calories: 180 },
-    { id: 3, name: 'Strength Training', duration: 60, difficulty: 'Intermediate', calories: 420 },
-  ];
+  const { showToast } = useToast();
+  const [workouts, setWorkouts] = useState([]);
+  const [form, setForm] = useState(emptyWorkout);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await workoutAPI.getAll();
+      setWorkouts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const updateForm = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const saveWorkout = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    const payload = {
+      exercisedId: Number(form.exercisedId),
+      sets: Number(form.sets),
+      reps: Number(form.reps),
+      date: new Date(form.date).toISOString(),
+    };
+
+    try {
+      if (editingId) {
+        await workoutAPI.update(editingId, payload);
+        showToast({ type: 'success', title: 'Workout updated' });
+      } else {
+        await workoutAPI.create(payload);
+        showToast({ type: 'success', title: 'Workout created' });
+      }
+      setEditingId(null);
+      setForm(emptyWorkout);
+      await load();
+    } catch (err) {
+      showToast({ type: 'error', title: 'Workout save failed', message: err.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <PageLoader label="Loading workouts..." />;
+  if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-gray-900 dark:text-white mb-2">Manage Workouts</h2>
-          <p className="text-gray-600 dark:text-gray-400">Create and edit workout programs</p>
-        </div>
-        <Button>
-          <Plus className="w-4 h-4" />
-          Add Workout
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Workouts</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Workout completion is intentionally absent because the backend does not expose completion endpoints.
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {workouts.map((workout) => (
-          <Card key={workout.id}>
-            <div className="mb-3">
-              <h4 className="text-gray-900 dark:text-white mb-1">{workout.name}</h4>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs ${
-                  workout.difficulty === 'Beginner'
-                    ? 'bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400'
-                    : workout.difficulty === 'Intermediate'
-                    ? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-400'
-                    : 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400'
-                }`}
-              >
-                {workout.difficulty}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400">Duration</p>
-                <p className="text-gray-900 dark:text-white">{workout.duration} min</p>
-              </div>
-              <div>
-                <p className="text-gray-500 dark:text-gray-400">Burns</p>
-                <p className="text-gray-900 dark:text-white">{workout.calories} kcal</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Edit className="w-4 h-4" />
-                Edit
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <form onSubmit={saveWorkout} className="grid gap-4 md:grid-cols-4">
+          <NumberField label="Exercise ID" value={form.exercisedId} onChange={(value) => updateForm('exercisedId', value)} />
+          <NumberField label="Sets" value={form.sets} onChange={(value) => updateForm('sets', value)} />
+          <NumberField label="Reps" value={form.reps} onChange={(value) => updateForm('reps', value)} />
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Date</span>
+            <input
+              type="date"
+              value={form.date}
+              onChange={(event) => updateForm('date', event.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            />
+          </label>
+          <div className="md:col-span-4">
+            <Button type="submit" disabled={saving}>
+              {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {saving ? 'Saving...' : editingId ? 'Update workout' : 'Add workout'}
+            </Button>
+          </div>
+        </form>
+      </Card>
+
+      {workouts.length === 0 ? (
+        <EmptyState title="No workouts found" />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {workouts.map((workout) => (
+            <Card key={workout.id}>
+              <Dumbbell className="h-7 w-7 text-emerald-500" />
+              <h2 className="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+                {workout.exerciseName || `Workout #${workout.id}`}
+              </h2>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {workout.description || 'Exercise record'}
+              </p>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function NumberField({ label, value, onChange }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+      <input
+        type="number"
+        min="1"
+        value={value}
+        required
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+      />
+    </label>
   );
 }

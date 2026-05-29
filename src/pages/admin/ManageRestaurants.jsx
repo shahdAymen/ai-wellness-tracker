@@ -1,56 +1,98 @@
-import React from 'react';
-import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
-import { Card } from '../../components/UI/Card';
+import React, { useEffect, useState } from 'react';
+import { Globe, MapPin, Phone, RefreshCw } from 'lucide-react';
 import Button from '../../components/UI/Button';
+import { Card } from '../../components/UI/Card';
+import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
+import { restaurantAPI } from '../../services/api';
 
 export default function ManageRestaurants() {
-  const restaurants = [
-    { id: 1, name: 'Green Leaf Bistro', location: 'Downtown', cuisine: 'Vegan', rating: 4.8 },
-    { id: 2, name: 'Protein Palace', location: 'Mall Area', cuisine: 'Healthy Fast Food', rating: 4.6 },
-    { id: 3, name: 'Mediterranean Kitchen', location: 'Beach Road', cuisine: 'Mediterranean', rating: 4.9 },
-  ];
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await restaurantAPI.adminGetAll();
+      setRestaurants(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  if (loading) return <PageLoader label="Loading restaurants..." />;
+  if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-gray-900 dark:text-white mb-2">Manage Restaurants</h2>
-          <p className="text-gray-600 dark:text-gray-400">Add and manage restaurant database</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Restaurants</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Read-only admin restaurant management. No create, update, or delete restaurant endpoints are documented.
+          </p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4" />
-          Add Restaurant
+        <Button variant="outline" onClick={load}>
+          <RefreshCw className="h-4 w-4" />
+          Refresh
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {restaurants.map((restaurant) => (
-          <Card key={restaurant.id}>
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h4 className="text-gray-900 dark:text-white mb-1">{restaurant.name}</h4>
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <MapPin className="w-4 h-4" />
-                  <span>{restaurant.location}</span>
+      {restaurants.length === 0 ? (
+        <EmptyState title="No restaurants found" />
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {restaurants.map((restaurant) => (
+            <Card key={restaurant.id}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{restaurant.name}</h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {restaurant.category || 'Restaurant'} · {restaurant.cuisine_type || 'Cuisine'}
+                  </p>
                 </div>
+                {restaurant.distance_km != null && (
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    {Number(restaurant.distance_km).toFixed(1)} km
+                  </span>
+                )}
               </div>
-              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-400 rounded-full text-sm">
-                ★ {restaurant.rating}
-              </span>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{restaurant.cuisine}</p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Edit className="w-4 h-4" />
-                Edit
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+
+              <div className="mt-5 space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                {restaurant.address && (
+                  <div className="flex gap-2">
+                    <MapPin className="mt-0.5 h-4 w-4 text-emerald-500" />
+                    <span>
+                      {restaurant.address}
+                      {restaurant.area ? `, ${restaurant.area}` : ''}
+                      {restaurant.city ? `, ${restaurant.city}` : ''}
+                    </span>
+                  </div>
+                )}
+                {restaurant.phone && (
+                  <div className="flex gap-2">
+                    <Phone className="mt-0.5 h-4 w-4 text-emerald-500" />
+                    <span>{restaurant.phone}</span>
+                  </div>
+                )}
+                {restaurant.website && (
+                  <a href={restaurant.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
+                    <Globe className="h-4 w-4" />
+                    Website
+                  </a>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

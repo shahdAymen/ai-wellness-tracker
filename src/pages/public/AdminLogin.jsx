@@ -15,7 +15,7 @@ export function AdminLogin() {
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
 
   const validateForm = () => {
     const newErrors = {};
@@ -40,8 +40,15 @@ export function AdminLogin() {
 
     try {
       setLoading(true);
-      await login(email, password, true);
-      navigate('/admin');
+      const loggedInUser = await login(email, password);
+      const isAdmin = (loggedInUser?.roles || []).some((role) => role?.toLowerCase?.() === 'admin');
+
+      if (!isAdmin) {
+        await logout();
+        throw new Error('This account does not have admin access.');
+      }
+
+      navigate('/admin', { replace: true });
     } catch (err) {
       console.error(err);
       setGeneralError(err.message || 'Login failed. Please check your admin credentials.');
@@ -89,7 +96,7 @@ export function AdminLogin() {
                     ? 'border-red-500 focus:ring-red-500'
                     : 'border-slate-600'
                 }`}
-                placeholder="admin@vitalityai.com"
+                placeholder="admin email"
               />
             </div>
             {errors.email && (

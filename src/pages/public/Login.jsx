@@ -2,10 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '../../components/UI/Button';
-import SocialLogin from '../../components/Auth/SocialLogin';
-
-
-
 import { Card } from '../../components/UI/Card';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../../components/UI/ThemeToggle';
@@ -18,7 +14,7 @@ export function Login() {
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAdmin } = useAuth();
 
   const validateForm = () => {
     const newErrors = {};
@@ -43,8 +39,9 @@ export function Login() {
 
     try {
       setLoading(true);
-      await login(email, password);
-      navigate('/user');
+      const loggedInUser = await login(email, password);
+      const admin = (loggedInUser?.roles || []).some((role) => role?.toLowerCase?.() === 'admin');
+      navigate(admin || isAdmin ? '/admin' : '/user', { replace: true });
     } catch (err) {
       console.error(err);
       setGeneralError(err.message || 'Login failed. Please check your credentials.');

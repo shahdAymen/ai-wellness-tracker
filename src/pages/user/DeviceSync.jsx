@@ -1,114 +1,103 @@
-import React from 'react';
-import { Watch, Bluetooth, Activity, Heart, Zap } from 'lucide-react';
-import { Card } from '../../components/UI/Card';
+import React, { useEffect, useState } from 'react';
+import { Activity, Flame, HeartPulse, Link, Moon, RefreshCw, Route, Timer } from 'lucide-react';
 import Button from '../../components/UI/Button';
+import { Card } from '../../components/UI/Card';
+import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
+import { authAPI, googleFitAPI, isFatalApiError, isIntegrationError } from '../../services/api';
 
-function DeviceSync() {
-  const devices = [
-    { id: 1, name: 'Apple Watch Series 8', type: 'Smartwatch', connected: true, battery: 87 },
-    { id: 2, name: 'Fitbit Charge 5', type: 'Fitness Tracker', connected: false, battery: null },
-    { id: 3, name: 'Garmin Forerunner', type: 'GPS Watch', connected: false, battery: null },
-  ];
+export default function DeviceSync() {
+  const [summary, setSummary] = useState(null);
+  const [integrationMissing, setIntegrationMissing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const syncedData = [
-    { label: 'Heart Rate', value: '72 bpm', icon: Heart, color: 'text-red-500' },
-    { label: 'Steps Today', value: '8,423', icon: Activity, color: 'text-blue-500' },
-    { label: 'Active Minutes', value: '45 min', icon: Zap, color: 'text-orange-500' },
-    { label: 'Calories Burned', value: '450 kcal', icon: Zap, color: 'text-emerald-500' },
-  ];
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    setIntegrationMissing(false);
+
+    try {
+      const data = await googleFitAPI.getTodaySummary();
+      setSummary(data);
+    } catch (err) {
+      setSummary(null);
+
+      if (isIntegrationError(err) || (!isFatalApiError(err) && err.status !== 401 && err.status !== 403)) {
+        setIntegrationMissing(true);
+      } else {
+        setError(err);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const connectGoogle = () => {
+    window.location.href = authAPI.getGoogleLoginUrl();
+  };
+
+  if (loading) return <PageLoader label="Loading Google Fit summary..." />;
+  if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-gray-900 dark:text-white mb-2">Device Sync</h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Connect your smartwatch to sync real-time workout data
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h3 className="text-gray-900 dark:text-white">Available Devices</h3>
-          {devices.map((device) => (
-            <Card key={device.id}>
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
-                    <Watch className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <h4 className="text-gray-900 dark:text-white mb-1">{device.name}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{device.type}</p>
-                    {device.connected && device.battery && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Battery: {device.battery}%
-                      </p>
-                    )}
-                  </div>
-                </div>
-                {device.connected ? (
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-xs text-emerald-500">Connected</span>
-                  </div>
-                ) : (
-                  <Button size="sm" variant="outline">
-                    <Bluetooth className="w-4 h-4" />
-                    Connect
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Google Fit</p>
+          <h1 className="mt-2 text-3xl font-bold text-white">Connected activity summary</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Google Fit data is optional. When it is not connected, this page stays friendly and actionable.
+          </p>
         </div>
-
-        <div className="space-y-4">
-          <h3 className="text-gray-900 dark:text-white">Live Data</h3>
-          <Card className="bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-950 dark:to-black text-white">
-            <div className="flex items-center justify-between mb-4">
-              <h4>Real-Time Metrics</h4>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                <span className="text-xs text-emerald-400">LIVE</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {syncedData.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div key={item.label} className="text-center p-4 bg-white/5 rounded-lg">
-                    <Icon className={`w-6 h-6 ${item.color} mx-auto mb-2`} />
-                    <p className="text-2xl mb-1">{item.value}</p>
-                    <p className="text-xs text-gray-400">{item.label}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          <Card>
-            <h4 className="text-gray-900 dark:text-white mb-4">Sync History</h4>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Last sync</span>
-                <span className="text-gray-900 dark:text-white">2 minutes ago</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Data points synced</span>
-                <span className="text-gray-900 dark:text-white">1,247</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Status</span>
-                <span className="text-emerald-600 dark:text-emerald-400">Active</span>
-              </div>
-            </div>
-          </Card>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={load}>
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button onClick={connectGoogle}>
+            <Link className="h-4 w-4" />
+            Connect Google
+          </Button>
         </div>
       </div>
+
+      {integrationMissing || !summary ? (
+        <EmptyState
+          title="No Google Fit account connected."
+          message="Connect Google Fit to sync steps, calories burned, distance, heart rate, activity minutes, and sleep."
+          action={
+            <Button onClick={connectGoogle}>
+              <Link className="h-4 w-4" />
+              Connect Google Fit
+            </Button>
+          }
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <Metric icon={Activity} label="Steps" value={summary.steps} />
+          <Metric icon={Flame} label="Calories burned" value={summary.caloriesBurned} suffix="kcal" />
+          <Metric icon={Route} label="Distance" value={summary.distanceKm} suffix="km" />
+          <Metric icon={Timer} label="Activity minutes" value={summary.activityMinutes} suffix="min" />
+          <Metric icon={HeartPulse} label="Average heart rate" value={summary.averageHeartRate} suffix="bpm" />
+          <Metric icon={Moon} label="Sleep" value={summary.sleepHours} suffix="h" />
+        </div>
+      )}
     </div>
   );
 }
 
-export default DeviceSync;
-export { DeviceSync };
+function Metric({ icon: Icon, label, value, suffix = '' }) {
+  return (
+    <Card className="border border-slate-700 bg-slate-900">
+      <Icon className="h-7 w-7 text-emerald-400" />
+      <p className="mt-4 text-sm text-slate-400">{label}</p>
+      <p className="mt-1 text-3xl font-bold text-white">
+        {Number(value || 0).toLocaleString()} {suffix}
+      </p>
+    </Card>
+  );
+}

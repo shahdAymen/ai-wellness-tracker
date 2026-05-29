@@ -2,40 +2,37 @@ import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
-  ClipboardList,
+  CalendarDays,
   Activity,
   BarChart3,
   MapPin,
-  Bell,
   Settings,
   LogOut,
   Menu,
   X,
   Watch,
-  MessageSquare, 
 } from 'lucide-react';
 import { UserCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
+import { useGlobalLoading } from '../../context/LoadingContext';
 
 export default function UserLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, hasCompletedProfile } = useAuth();
+  const { isApiLoading } = useGlobalLoading();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '' },
-    { icon: ClipboardList, label: 'My Protocol', path: 'protocol' },
+    { icon: CalendarDays, label: 'AI Planner', path: 'planner' },
     { icon: Activity, label: 'Tracker', path: 'tracker' },
     { icon: BarChart3, label: 'Analytics', path: 'analytics' },
     { icon: MapPin, label: 'Restaurants', path: 'restaurants' },
-    { icon: Watch, label: 'Device Sync', path: 'device-sync' },
-    { icon: Bell, label: 'Notifications', path: 'notifications' },
-    { icon: MessageSquare, label: 'ChatBot', path: 'chatbot' },
+    { icon: Watch, label: 'Google Fit', path: 'device-sync' },
     { icon: UserCircle, label: 'Complete Profile', path: 'complete-profile' },
     { icon: Settings, label: 'Settings', path: 'settings' },
-
   ];
 
   const handleLogout = async () => {
@@ -49,6 +46,12 @@ export default function UserLayout() {
       .map((n) => n[0])
       .join('')
       .toUpperCase();
+
+  React.useEffect(() => {
+    if (!hasCompletedProfile && location.pathname !== '/user/complete-profile') {
+      navigate('/user/complete-profile', { replace: true });
+    }
+  }, [hasCompletedProfile, location.pathname, navigate]);
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
@@ -148,6 +151,7 @@ export default function UserLayout() {
             </div>
           </div>
         </header>
+        {isApiLoading && <div className="h-1 w-full bg-emerald-500/80" />}
 
         {/* Page Content */}
         <main className="flex-1 p-6 overflow-y-auto bg-[#0B1120]">

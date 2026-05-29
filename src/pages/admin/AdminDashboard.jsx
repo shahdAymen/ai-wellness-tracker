@@ -1,100 +1,109 @@
-import React from 'react';
-import { Users, UtensilsCrossed, Dumbbell, Store, TrendingUp, Activity } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Store, UtensilsCrossed, Users } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
+import { ErrorState, PageLoader } from '../../components/UI/StatusStates';
+import { dashboardAPI, mealsAPI, restaurantAPI, userAPI } from '../../services/api';
 
-export function AdminDashboard() {
-  const stats = [
-    { label: 'Total Users', value: '12,543', change: '+12%', icon: Users, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-950' },
-    { label: 'Active Plans', value: '8,234', change: '+8%', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-950' },
-    { label: 'Total Recipes', value: '1,456', change: '+23', icon: UtensilsCrossed, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-950' },
-    { label: 'Workouts', value: '892', change: '+15', icon: Dumbbell, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-950' },
-    { label: 'Restaurants', value: '234', change: '+5', icon: Store, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-950' },
-    { label: 'Growth Rate', value: '+24%', change: 'This month', icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-950' },
+export default function AdminDashboard() {
+  const [data, setData] = useState({
+    dashboard: null,
+    users: [],
+    meals: [],
+    restaurants: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [dashboard, users, meals, restaurants] = await Promise.all([
+        dashboardAPI.getAdminDashboard(),
+        userAPI.getAllUsers(),
+        mealsAPI.adminGetMeals(),
+        restaurantAPI.adminGetAll(),
+      ]);
+      setData({
+        dashboard,
+        users: Array.isArray(users) ? users : [],
+        meals: Array.isArray(meals) ? meals : [],
+        restaurants: Array.isArray(restaurants) ? restaurants : [],
+      });
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  if (loading) return <PageLoader label="Loading admin dashboard..." />;
+  if (error) return <ErrorState message={error.message} onRetry={load} />;
+
+  const cards = [
+    { label: 'Total users', value: data.dashboard?.totalUsers ?? data.users.length, icon: Users },
+    { label: 'Total meals', value: data.dashboard?.totalMeals ?? data.meals.length, icon: UtensilsCrossed },
+    { label: 'Restaurants', value: data.dashboard?.totalRestaurants ?? data.restaurants.length, icon: Store },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-gray-900 dark:text-white mb-2">System Overview</h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Monitor platform performance and user engagement
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">System Overview</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Live admin counters from documented dashboard, user, meal, and restaurant endpoints.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
+      <div className="grid gap-6 md:grid-cols-3">
+        {cards.map((card) => {
+          const Icon = card.icon;
           return (
-            <Card key={stat.label}>
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
-                  <p className="text-3xl text-gray-900 dark:text-white">{stat.value}</p>
-                </div>
-                <div className={`w-12 h-12 rounded-lg ${stat.bg} flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-              <p className="text-sm text-emerald-600 dark:text-emerald-400">{stat.change}</p>
+            <Card key={card.label}>
+              <Icon className="h-8 w-8 text-emerald-500" />
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">{card.label}</p>
+              <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
+                {Number(card.value || 0).toLocaleString()}
+              </p>
             </Card>
           );
         })}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <h3 className="text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Recent users</h2>
           <div className="space-y-3">
-            {[
-              'New user registered: john@example.com',
-              'Recipe added: Mediterranean Bowl',
-              'Workout plan created: HIIT Beginner',
-              'Restaurant verified: Green Leaf Bistro',
-            ].map((activity, i) => (
-              <div
-                key={i}
-                className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-sm text-gray-700 dark:text-gray-300"
-              >
-                {activity}
+            {data.users.slice(0, 5).map((user) => (
+              <div key={user.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-slate-700">
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">{user.fullName || user.email}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                </div>
+                <span className="text-sm text-gray-500 dark:text-gray-300">{user.role}</span>
               </div>
             ))}
           </div>
         </Card>
 
         <Card>
-          <h3 className="text-gray-900 dark:text-white mb-4">System Health</h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Server Load</span>
-                <span className="text-sm text-gray-900 dark:text-white">23%</span>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Restaurant inventory</h2>
+          <div className="space-y-3">
+            {data.restaurants.slice(0, 5).map((restaurant) => (
+              <div key={restaurant.id} className="rounded-lg bg-gray-50 p-3 dark:bg-slate-700">
+                <p className="font-semibold text-gray-900 dark:text-white">{restaurant.name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {restaurant.category || 'Restaurant'} · {restaurant.city || restaurant.area || 'Location not set'}
+                </p>
               </div>
-              <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '23%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Database Usage</span>
-                <span className="text-sm text-gray-900 dark:text-white">67%</span>
-              </div>
-              <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: '67%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">API Response Time</span>
-                <span className="text-sm text-gray-900 dark:text-white">142ms</span>
-              </div>
-              <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 rounded-full" style={{ width: '85%' }} />
-              </div>
-            </div>
+            ))}
           </div>
         </Card>
       </div>
     </div>
   );
 }
-export default AdminDashboard;

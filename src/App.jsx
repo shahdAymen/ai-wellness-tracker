@@ -22,18 +22,12 @@ import AdminLogin from './pages/public/AdminLogin';
 // ===============================
 import CompleteProfile from './pages/user/CompleteProfile';
 import UserDashboard from './pages/user/UserDashboard';
-import Protocol from './pages/user/Protocol';
+import AIPlanner from './pages/user/AIPlanner';
 import Tracker from './pages/user/Tracker';
 import Analytics from './pages/user/Analytics';
 import Restaurants from './pages/user/Restaurants';
-import Notifications from './pages/user/Notifications';
 import Settings from './pages/user/Settings';
 import DeviceSync from './pages/user/DeviceSync';
-
-// ===============================
-// NEW: CHATBOT PAGE
-// ===============================
-import ChatBot from './pages/user/ChatBot';
 
 // ===============================
 // ADMIN PAGES
@@ -43,7 +37,6 @@ import ManageUsers from './pages/admin/ManageUsers';
 import ManageRecipes from './pages/admin/ManageRecipes';
 import ManageWorkouts from './pages/admin/ManageWorkouts';
 import ManageRestaurants from './pages/admin/ManageRestaurants';
-import SystemAnalytics from './pages/admin/systemAnalytics';
 
 // ===============================
 // ROUTES HANDLER
@@ -99,15 +92,13 @@ function AppRoutes() {
       >
         <Route index element={<UserDashboard />} />
         <Route path="complete-profile" element={<CompleteProfile />} />
-        <Route path="protocol" element={<Protocol />} />
+        <Route path="planner" element={<AIPlanner />} />
+        <Route path="protocol" element={<Navigate to="/user/planner" replace />} />
         <Route path="tracker" element={<Tracker />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="restaurants" element={<Restaurants />} />
-        <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
         <Route path="device-sync" element={<DeviceSync />} />
-        {/* ================= CHATBOT ================= */}
-        <Route path="chatbot" element={<ChatBot />} />
       </Route>
 
       {/* ---------------- ADMIN ---------------- */}
@@ -124,7 +115,6 @@ function AppRoutes() {
         <Route path="recipes" element={<ManageRecipes />} />
         <Route path="workouts" element={<ManageWorkouts />} />
         <Route path="restaurants" element={<ManageRestaurants />} />
-        <Route path="analytics" element={<SystemAnalytics />} />
       </Route>
 
       {/* ---------------- FALLBACK ---------------- */}
