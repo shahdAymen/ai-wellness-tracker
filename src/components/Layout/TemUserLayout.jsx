@@ -14,6 +14,7 @@ import {
   Watch,
   MessageSquare, 
 } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
 
@@ -31,8 +32,10 @@ export default function UserLayout() {
     { icon: MapPin, label: 'Restaurants', path: 'restaurants' },
     { icon: Watch, label: 'Device Sync', path: 'device-sync' },
     { icon: Bell, label: 'Notifications', path: 'notifications' },
-    { icon: Settings, label: 'Settings', path: 'settings' },
     { icon: MessageSquare, label: 'ChatBot', path: 'chatbot' },
+    { icon: UserCircle, label: 'Complete Profile', path: 'complete-profile' },
+    { icon: Settings, label: 'Settings', path: 'settings' },
+
   ];
 
   const handleLogout = async () => {
@@ -111,7 +114,8 @@ export default function UserLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">       
         {/* Top Bar */}
         <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center">
@@ -146,7 +150,7 @@ export default function UserLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-y-auto bg-[#0B1120]">
           <Outlet />
         </main>
       </div>

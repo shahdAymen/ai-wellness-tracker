@@ -8,13 +8,21 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // INIT
+  // ======================
+  // INIT (FIXED SAFE JSON)
+  // ======================
   useEffect(() => {
     const token = getToken();
     const savedUser = localStorage.getItem('user');
 
     if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Invalid user in localStorage");
+        removeToken();
+        localStorage.removeItem('user');
+      }
     } else {
       removeToken();
       localStorage.removeItem('user');
@@ -39,14 +47,20 @@ export function AuthProvider({ children }) {
 
     setToken(response.token);
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+
+    localStorage.setItem(
+      'user',
+      JSON.stringify(userData)
+    );
   };
 
   // ======================
   // GOOGLE LOGIN
   // ======================
   const loginWithGoogle = async (credential) => {
-    const response = await authAPI.googleLogin({ credential });
+    const response = await authAPI.googleLogin({
+      credential,
+    });
 
     const userData = {
       name: response.name,
@@ -56,11 +70,15 @@ export function AuthProvider({ children }) {
 
     setToken(response.token);
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+
+    localStorage.setItem(
+      'user',
+      JSON.stringify(userData)
+    );
   };
 
   // ======================
-  // REGISTER (FIXED)
+  // REGISTER
   // ======================
   const register = async (data) => {
     try {
@@ -68,11 +86,10 @@ export function AuthProvider({ children }) {
         fullName: data.fullName,
         email: data.email,
         password: data.password,
-        confirmPassword: data.confirmPassword, // ✅ FIXED
+        confirmPassword: data.confirmPassword,
       });
 
-      // login after success
-      await login(data.email, data.password, false);
+      return true; // FIXED
 
     } catch (error) {
       console.error("Register failed:", error);
@@ -94,8 +111,12 @@ export function AuthProvider({ children }) {
       value={{
         user,
         loading,
+
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'Admin',
+
+        // FIX SAFE ADMIN CHECK
+        isAdmin: user?.role?.toLowerCase?.() === 'admin',
+
         login,
         loginWithGoogle,
         register,
@@ -107,12 +128,18 @@ export function AuthProvider({ children }) {
   );
 }
 
+// ======================
 // HOOK
+// ======================
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error('useAuth must be used inside AuthProvider');
+    throw new Error(
+      'useAuth must be used inside AuthProvider'
+    );
   }
+
   return context;
 }
 

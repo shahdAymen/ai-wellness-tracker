@@ -5,7 +5,9 @@ import {
   Utensils,
   CheckCircle,
   Loader2,
-  MessageCircle
+  MessageCircle,
+  Sparkles,
+  Dumbbell
 } from 'lucide-react';
 
 import { motion } from 'framer-motion';
@@ -317,21 +319,23 @@ export function UserDashboard() {
             })
           )}
         </Card>
+{/* ACTION BUTTONS */}
+<div className="grid md:grid-cols-3 gap-4">
+  <Button variant="outline" onClick={() => setPlanOpen(true)}>
+    <Sparkles className="w-4 h-4" />
+    Generate AI Plan
+  </Button>
 
-        {/* ACTION BUTTONS */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Button onClick={() => setPlanOpen(true)}>
-            AI Plan
-          </Button>
+  <Button variant="outline" onClick={() => setMealOpen(true)}>
+    <Utensils className="w-4 h-4" />
+    Log Meal
+  </Button>
 
-          <Button onClick={() => setMealOpen(true)}>
-            Meal
-          </Button>
-
-          <Button onClick={() => setWorkoutOpen(true)}>
-            Workout
-          </Button>
-        </div>
+  <Button variant="outline" onClick={() => setWorkoutOpen(true)}>
+    <Dumbbell className="w-4 h-4" />
+    Track Workout
+  </Button>
+</div>
       </motion.div>
 
       {/* CHATBOT FLOATING BUTTON */}

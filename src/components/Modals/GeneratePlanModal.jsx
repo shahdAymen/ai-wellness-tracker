@@ -2,153 +2,192 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { aiAPI } from '../../API';
+import Button from '../../components/UI/Button';
 
 export function GeneratePlanModal({ isOpen, onClose }) {
-  const [goal, setGoal] = useState('');
-  const [duration, setDuration] = useState('7');
+  const [formData, setFormData] = useState({
+    age: '',
+    gender: 'Male',
+    height: '',
+    weight: '',
+    goal: 'lose',
+    activity: 'sedentary',
+  });
+
   const [isGenerating, setIsGenerating] = useState(false);
-  const [plan, setPlan] = useState(null);
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleGenerate = async () => {
     try {
-      if (!goal) return;
-
       setIsGenerating(true);
-
-      const res = await aiAPI.generateWeeklyPlan(
-        goal,
-        Number(duration)
-      );
-
+      const res = await aiAPI.generateWeeklyPlan(formData);
       console.log('AI RESPONSE:', res);
-
-      const data = res?.data ?? res;
-
-      setPlan({
-        title: data?.title || 'AI Plan',
-        duration: data?.duration || `${duration} days`,
-        meals: data?.meals ?? [],
-        workouts: data?.workouts ?? [],
-      });
-
     } catch (err) {
-      console.error('Generate error:', err);
+      console.error(err);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleReset = () => {
-    setPlan(null);
-    setGoal('');
-    setDuration('7');
-  };
+  // ===== UI STYLES (MATCH DASHBOARD THEME) =====
+  const inputClass =
+    "w-full bg-[#0B1220] border border-[#243B55] rounded-2xl px-5 py-4 text-white outline-none focus:border-emerald-400 transition placeholder:text-gray-500";
+
+  const labelClass = "text-gray-300 text-sm mb-2 block";
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* OVERLAY */}
           <motion.div
-            className="fixed inset-0 bg-black/80 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#050A14]/80 backdrop-blur-md z-50"
             onClick={onClose}
           />
 
+          {/* MODAL */}
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-            <motion.div className="w-full max-w-2xl bg-[#0A0E27] border-4 border-[#FF6B35]">
-
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-3xl rounded-3xl bg-[#0B1220] border border-[#243B55] shadow-2xl overflow-hidden"
+            >
               {/* HEADER */}
-              <div className="bg-[#FF6B35] p-6 flex justify-between items-center">
-                <h2 className="font-black text-black">
-                  GENERATE AI PLAN
-                </h2>
+              <div className="flex items-center justify-between px-8 py-6 border-b border-[#243B55]">
+                <div>
+                  <h2 className="text-3xl font-bold text-white">
+                    Customize Your AI
+                  </h2>
+                  <p className="text-gray-400 mt-1">
+                    We need this data to calculate your metabolic rate.
+                  </p>
+                </div>
 
-                <button onClick={onClose}>
-                  <X />
+                <button onClick={onClose} className="text-gray-400 hover:text-white">
+                  <X size={26} />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
+              {/* BODY */}
+              <div className="p-8 space-y-6">
 
-                {!plan ? (
-                  <>
-                    {/* GOAL */}
+                {/* AGE + GENDER */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClass}>Age</label>
+                    <input
+                      type="number"
+                      placeholder="25"
+                      value={formData.age}
+                      onChange={(e) => handleChange('age', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Gender</label>
                     <select
-                      value={goal}
-                      onChange={(e) => setGoal(e.target.value)}
-                      className="w-full p-3 bg-[#151935] text-white"
+                      value={formData.gender}
+                      onChange={(e) => handleChange('gender', e.target.value)}
+                      className={inputClass}
                     >
-                      <option value="">اختر الهدف</option>
-                      <option value="lose">خسارة الوزن</option>
-                      <option value="gain">زيادة العضلات</option>
-                      <option value="maintain">الحفاظ على الوزن</option>
+                      <option>Male</option>
+                      <option>Female</option>
                     </select>
+                  </div>
+                </div>
 
-                    {/* DURATION */}
-                    <div className="grid grid-cols-3 gap-3">
-                      {['7', '14', '30'].map((d) => (
-                        <button
-                          key={d}
-                          onClick={() => setDuration(d)}
-                          className={`p-4 border ${
-                            duration === d
-                              ? 'bg-orange-500 text-black'
-                              : 'bg-[#151935] text-white'
-                          }`}
-                        >
-                          {d} يوم
-                        </button>
-                      ))}
-                    </div>
+                {/* HEIGHT + WEIGHT */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClass}>Height (cm)</label>
+                    <input
+                      type="number"
+                      placeholder="175"
+                      value={formData.height}
+                      onChange={(e) => handleChange('height', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
 
-                    {/* GENERATE */}
-                    <button
-                      onClick={handleGenerate}
-                      disabled={!goal || isGenerating}
-                      className="w-full bg-orange-500 p-4 font-bold disabled:opacity-50"
-                    >
-                      {isGenerating ? 'جاري الإنشاء...' : 'إنشاء الخطة'}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {/* RESULT */}
-                    <h3 className="text-white text-xl font-bold">
-                      {plan.title}
-                    </h3>
+                  <div>
+                    <label className={labelClass}>Weight (kg)</label>
+                    <input
+                      type="number"
+                      placeholder="70"
+                      value={formData.weight}
+                      onChange={(e) => handleChange('weight', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
 
-                    <p className="text-gray-300">
-                      {plan.duration}
-                    </p>
+                {/* GOAL */}
+                <div>
+                  <label className="text-gray-300 text-sm mb-3 block">
+                    Primary Goal
+                  </label>
 
-                    {/* MEALS */}
-                    <div className="space-y-2 mt-4">
-                      {(plan.meals || []).map((m, i) => (
-                        <div
-                          key={i}
-                          className="bg-[#151935] p-2 text-white"
-                        >
-                          {m.name} - {m.calories} kcal
-                        </div>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { key: 'lose', label: 'Lose Weight' },
+                      { key: 'gain', label: 'Build Muscle' },
+                      { key: 'maintain', label: 'Maintain' },
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        onClick={() => handleChange('goal', item.key)}
+                        className={`
+                          py-4 rounded-2xl font-semibold transition-all duration-300
+                          border text-sm md:text-base
+                          ${
+                            formData.goal === item.key
+                              ? 'bg-emerald-500 text-black border-emerald-400 shadow-lg shadow-emerald-500/30 scale-[1.03]'
+                              : 'bg-[#0B1220] text-emerald-400 border-[#243B55] hover:border-emerald-400 hover:scale-[1.01]'
+                          }
+                        `}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                    {/* ACTIONS */}
-                    <button
-                      onClick={handleReset}
-                      className="mt-4 bg-gray-700 p-3 w-full text-white"
-                    >
-                      إنشاء جديد
-                    </button>
+                {/* ACTIVITY */}
+                <div>
+                  <label className={labelClass}>Activity Level</label>
 
-                    <button
-                      onClick={onClose}
-                      className="mt-2 bg-green-400 p-3 w-full text-black"
-                    >
-                      تطبيق
-                    </button>
-                  </>
-                )}
+                  <select
+                    value={formData.activity}
+                    onChange={(e) => handleChange('activity', e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="sedentary">Sedentary (Office Job)</option>
+                    <option value="light">Light Exercise</option>
+                    <option value="moderate">Moderate Exercise</option>
+                    <option value="active">Very Active</option>
+                  </select>
+                </div>
 
+                {/* BUTTON */}
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  size="lg"
+                  className="w-full mt-2"
+                >
+                  {isGenerating ? 'Generating...' : 'Analyze & Generate Dashboard'}
+                </Button>
               </div>
             </motion.div>
           </div>

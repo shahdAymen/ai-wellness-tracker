@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/Shared/ProtectedRoute';
 import './styles/globals.css';
 
+
 // Layouts
 import UserLayout from './components/Layout/TemUserLayout';
 import AdminLayout from './components/Layout/AdminLayout';
@@ -105,7 +106,6 @@ function AppRoutes() {
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
         <Route path="device-sync" element={<DeviceSync />} />
-
         {/* ================= CHATBOT ================= */}
         <Route path="chatbot" element={<ChatBot />} />
       </Route>
