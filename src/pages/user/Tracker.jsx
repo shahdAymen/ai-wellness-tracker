@@ -138,8 +138,8 @@ export default function Tracker() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Tracker</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Daily health tracking</h1>
-          <p className="mt-2 text-sm text-slate-300">
+          <h1 className="mt-2 text-3xl font-bold text-app">Daily health tracking</h1>
+          <p className="mt-2 text-sm text-app-muted">
             Update body metrics, hydration, and meal completion using the live VitalityAI backend.
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function Tracker() {
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold ${
               activeTab === key
                 ? 'bg-emerald-500 text-white'
-                : 'border border-slate-700 text-slate-300 hover:border-emerald-400'
+                : 'border border-app text-app-muted hover:border-emerald-400'
             }`}
           >
             <Icon className="h-4 w-4" />
@@ -172,7 +172,7 @@ export default function Tracker() {
       </div>
 
       {activeTab === 'stats' && (
-        <Card className="border border-slate-700 bg-slate-900">
+        <Card className="border border-app">
           {emptyStates.stats && (
             <div className="mb-5">
               <EmptyState
@@ -203,9 +203,9 @@ export default function Tracker() {
 
       {activeTab === 'water' && (
         <div className="grid gap-6 lg:grid-cols-[0.7fr_1fr]">
-          <Card className="border border-slate-700 bg-slate-900">
-            <p className="text-sm text-slate-400">Today</p>
-            <p className="mt-2 text-4xl font-bold text-white">
+          <Card className="border border-app">
+            <p className="text-sm text-app-muted">Today</p>
+            <p className="mt-2 text-4xl font-bold text-app">
               {Number(waterToday?.totalAmount || 0).toFixed(1)} L
             </p>
             <div className="mt-5 flex gap-3">
@@ -216,7 +216,7 @@ export default function Tracker() {
                 step="0.05"
                 value={waterAmount}
                 onChange={(event) => setWaterAmount(event.target.value)}
-                className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="min-w-0 flex-1 rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               />
               <Button onClick={logWater} disabled={loggingWater}>
                 <Plus className="h-4 w-4" />
@@ -225,16 +225,16 @@ export default function Tracker() {
             </div>
           </Card>
 
-          <Card className="border border-slate-700 bg-slate-900">
-            <h2 className="text-xl font-bold text-white">Water history</h2>
+          <Card className="border border-app">
+            <h2 className="text-xl font-bold text-app">Water history</h2>
             <div className="mt-4 space-y-3">
               {waterHistory.length === 0 ? (
                 <EmptyState title="No water logs yet." message="Add your first hydration entry above." />
               ) : (
                 waterHistory.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between rounded-lg bg-slate-950 p-3">
-                    <span className="text-slate-200">{entry.amount} L</span>
-                    <span className="text-sm text-slate-400">
+                  <div key={entry.id} className="flex items-center justify-between rounded-lg bg-app-surface p-3">
+                    <span className="text-app">{entry.amount} L</span>
+                    <span className="text-sm text-app-muted">
                       {entry.date ? new Date(entry.date).toLocaleString() : 'Logged'}
                     </span>
                   </div>
@@ -246,8 +246,8 @@ export default function Tracker() {
       )}
 
       {activeTab === 'meals' && (
-        <Card className="border border-slate-700 bg-slate-900">
-          <h2 className="text-xl font-bold text-white">Today&apos;s meal completion</h2>
+        <Card className="border border-app">
+          <h2 className="text-xl font-bold text-app">Today&apos;s meal completion</h2>
           <div className="mt-4 space-y-3">
             {displayMeals.length === 0 ? (
               <EmptyState title="No meals available." message="Generate a meal plan before tracking meals." />
@@ -258,19 +258,19 @@ export default function Tracker() {
                   className={`flex items-center justify-between gap-4 rounded-lg border p-4 ${
                     meal.isCompleted
                       ? 'border-emerald-500/60 bg-emerald-500/10'
-                      : 'border-slate-700 bg-slate-950'
+                      : 'border-app bg-app-surface'
                   }`}
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-white">{meal.nameEn || meal.nameAr}</p>
+                      <p className="font-semibold text-app">{meal.nameEn || meal.nameAr}</p>
                       {meal.isCompleted && (
                         <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-200">
                           Completed
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-app-muted">
                       {meal.mealType} - {Math.round(meal.calories || 0)} kcal
                     </p>
                   </div>
@@ -303,7 +303,7 @@ export default function Tracker() {
 function NumberField({ id, label, value, onChange }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-300">{label}</span>
+      <span className="mb-2 block text-sm font-medium text-app-muted">{label}</span>
       <input
         id={id}
         type="number"
@@ -311,7 +311,7 @@ function NumberField({ id, label, value, onChange }) {
         value={value}
         required
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+        className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
       />
     </label>
   );

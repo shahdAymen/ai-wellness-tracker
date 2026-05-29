@@ -23,18 +23,18 @@ export default function Settings() {
     <div className="space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Settings</p>
-        <h1 className="mt-2 text-3xl font-bold text-white">Account and integrations</h1>
-        <p className="mt-2 text-sm text-slate-300">
+        <h1 className="mt-2 text-3xl font-bold text-app">Account and integrations</h1>
+        <p className="mt-2 text-sm text-app-muted">
           Only documented backend settings are active here. Unsupported notification and password
           update controls were removed.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border border-slate-700 bg-slate-900">
+        <Card className="border border-app">
           <div className="mb-5 flex items-center gap-3">
             <User className="h-6 w-6 text-emerald-400" />
-            <h2 className="text-xl font-bold text-white">Profile</h2>
+            <h2 className="text-xl font-bold text-app">Profile</h2>
           </div>
           <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
             Profile fields are read-only right now because the live backend exposes profile setup and
@@ -56,12 +56,12 @@ export default function Settings() {
           </Button>
         </Card>
 
-        <Card className="border border-slate-700 bg-slate-900">
+        <Card className="border border-app">
           <div className="mb-5 flex items-center gap-3">
             <Shield className="h-6 w-6 text-emerald-400" />
-            <h2 className="text-xl font-bold text-white">Session</h2>
+            <h2 className="text-xl font-bold text-app">Session</h2>
           </div>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-app-muted">
             Logout revokes the refresh token using the documented auth endpoint, then clears local
             session state.
           </p>
@@ -83,9 +83,9 @@ export default function Settings() {
 
 function InfoRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-      <span className="text-sm text-slate-400">{label}</span>
-      <span className="text-right text-sm font-semibold text-white">{value}</span>
+    <div className="flex items-center justify-between border-b border-app pb-3">
+      <span className="text-sm text-app-muted">{label}</span>
+      <span className="text-right text-sm font-semibold text-app">{value}</span>
     </div>
   );
 }

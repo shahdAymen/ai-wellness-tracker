@@ -135,7 +135,7 @@ export default function AIPlanner() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">AI Planner</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">Weekly and monthly meal plans</h1>
+            <h1 className="mt-2 text-3xl font-bold text-app">Weekly and monthly meal plans</h1>
           </div>
           <Button onClick={handleGenerate} disabled={generating}>
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -161,8 +161,8 @@ export default function AIPlanner() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">AI Planner</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Weekly and monthly meal plans</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
+          <h1 className="mt-2 text-3xl font-bold text-app">Weekly and monthly meal plans</h1>
+          <p className="mt-2 max-w-2xl text-sm text-app-muted">
             VitalityAI calculates target calories from your saved profile, stores the plan server-side,
             and now supports completion actions directly from the planner.
           </p>
@@ -180,9 +180,9 @@ export default function AIPlanner() {
         </div>
       </div>
 
-      <Card className="border border-slate-700 bg-slate-900">
+      <Card className="border border-app">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex rounded-lg border border-slate-700 bg-slate-950 p-1">
+          <div className="flex rounded-lg border border-app bg-app-surface p-1">
             {[
               ['weekly', 'Weekly'],
               ['monthly', 'Monthly'],
@@ -192,7 +192,7 @@ export default function AIPlanner() {
                 type="button"
                 onClick={() => setActiveView(key)}
                 className={`rounded-md px-4 py-2 text-sm font-semibold ${
-                  activeView === key ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:bg-slate-800'
+                  activeView === key ? 'bg-emerald-500 text-white' : 'text-app-muted hover:bg-black/5 dark:hover:bg-white/10'
                 }`}
               >
                 {label}
@@ -207,7 +207,7 @@ export default function AIPlanner() {
           </div>
         </div>
         {(activeView === 'weekly' ? emptyStates.weekly : emptyStates.monthly) && (
-          <p className="mt-4 text-sm text-slate-400">
+          <p className="mt-4 text-sm text-app-muted">
             This view is empty right now. Generate a plan to populate it.
           </p>
         )}
@@ -215,19 +215,19 @@ export default function AIPlanner() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         {days.map((day, index) => (
-          <Card key={`${day.date || index}-${day.day}`} className="border border-slate-700 bg-slate-900">
+          <Card key={`${day.date || index}-${day.day}`} className="border border-app">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-sm text-emerald-400">
                   <CalendarDays className="h-4 w-4" />
                   {day.day || `Day ${index + 1}`}
                 </div>
-                <h2 className="mt-1 text-xl font-bold text-white">
+                <h2 className="mt-1 text-xl font-bold text-app">
                   {day.date ? new Date(day.date).toLocaleDateString() : `Plan day ${index + 1}`}
                 </h2>
               </div>
               <div className="text-right">
-                <span className="rounded-full bg-slate-800 px-3 py-1 text-sm text-slate-200">
+                <span className="rounded-full bg-black/10 px-3 py-1 text-sm text-app dark:bg-white/10">
                   {Math.round(day.totalCalories || 0)} kcal
                 </span>
                 <p className="mt-2 text-sm font-medium text-emerald-300">
@@ -238,7 +238,7 @@ export default function AIPlanner() {
 
             <div className="space-y-3">
               {(day.meals || []).length === 0 ? (
-                <p className="text-sm text-slate-400">No meals stored for this day.</p>
+                <p className="text-sm text-app-muted">No meals stored for this day.</p>
               ) : (
                 day.meals.map((meal) => (
                   <div
@@ -246,13 +246,13 @@ export default function AIPlanner() {
                     className={`rounded-lg border p-4 transition ${
                       meal.isCompleted
                         ? 'border-emerald-500/60 bg-emerald-500/10'
-                        : 'border-slate-700 bg-slate-950'
+                        : 'border-app bg-app-surface'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`font-semibold ${meal.isCompleted ? 'text-emerald-100' : 'text-white'}`}>
+                          <p className={`font-semibold ${meal.isCompleted ? 'text-emerald-100' : 'text-app'}`}>
                             {meal.nameEn || meal.nameAr}
                           </p>
                           {meal.isCompleted && (
@@ -261,7 +261,7 @@ export default function AIPlanner() {
                             </span>
                           )}
                         </div>
-                        <p className="mt-1 text-sm text-slate-400">
+                        <p className="mt-1 text-sm text-app-muted">
                           {meal.mealType} - {Math.round(meal.calories || 0)} kcal
                         </p>
                       </div>
@@ -296,11 +296,11 @@ export default function AIPlanner() {
 
       {selectedMeal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <Card className="w-full max-w-xl border border-slate-700 bg-slate-900">
+          <Card className="w-full max-w-xl border border-app">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-emerald-400">{selectedMeal.mealType || 'Meal details'}</p>
-                <h2 className="mt-1 text-2xl font-bold text-white">
+                <h2 className="mt-1 text-2xl font-bold text-app">
                   {selectedMeal.nameEn || selectedMeal.nameAr}
                 </h2>
               </div>
@@ -310,7 +310,7 @@ export default function AIPlanner() {
             </div>
 
             {detailsLoading ? (
-              <div className="mt-6 flex items-center gap-2 text-slate-300">
+              <div className="mt-6 flex items-center gap-2 text-app-muted">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading details...
               </div>
@@ -338,9 +338,9 @@ export default function AIPlanner() {
 
 function SummaryTile({ label, value }) {
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-950 p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 font-semibold text-white">{value}</p>
+    <div className="rounded-lg border border-app bg-app-surface p-3">
+      <p className="text-xs text-app-muted">{label}</p>
+      <p className="mt-1 font-semibold text-app">{value}</p>
     </div>
   );
 }
@@ -348,8 +348,8 @@ function SummaryTile({ label, value }) {
 function InfoBlock({ label, value }) {
   return (
     <div>
-      <p className="text-sm font-semibold text-slate-200">{label}</p>
-      <p className="mt-1 text-sm text-slate-400">{value}</p>
+      <p className="text-sm font-semibold text-app">{label}</p>
+      <p className="mt-1 text-sm text-app-muted">{value}</p>
     </div>
   );
 }

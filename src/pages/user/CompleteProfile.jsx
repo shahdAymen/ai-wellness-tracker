@@ -126,21 +126,21 @@ export default function CompleteProfile() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Profile setup</p>
-        <h1 className="mt-2 text-3xl font-bold text-white">Build your VitalityAI baseline</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-300">
+        <h1 className="mt-2 text-3xl font-bold text-app">Build your VitalityAI baseline</h1>
+        <p className="mt-2 max-w-2xl text-sm text-app-muted">
           These fields match the backend profile contract and power calorie targets, AI meal plans,
           and daily tracking.
         </p>
       </div>
 
-      <Card className="border border-slate-700 bg-slate-900">
+      <Card className="border border-app">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Gender" error={errors.gender} icon={UserRound}>
               <select
                 value={form.gender}
                 onChange={(event) => updateField('gender', event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               >
                 <option value="">Select gender</option>
                 <option value="Male">Male</option>
@@ -154,7 +154,7 @@ export default function CompleteProfile() {
                 max={maxBirthDate}
                 value={form.birthDate}
                 onChange={(event) => updateField('birthDate', event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               />
             </Field>
 
@@ -165,7 +165,7 @@ export default function CompleteProfile() {
                 max="250"
                 value={form.height}
                 onChange={(event) => updateField('height', event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               />
             </Field>
 
@@ -177,7 +177,7 @@ export default function CompleteProfile() {
                 step="0.1"
                 value={form.weight}
                 onChange={(event) => updateField('weight', event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               />
             </Field>
 
@@ -185,7 +185,7 @@ export default function CompleteProfile() {
               <select
                 value={form.activityLevelId}
                 onChange={(event) => updateField('activityLevelId', event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               >
                 <option value="">Select activity level</option>
                 {activityLevels.map((level) => (
@@ -200,7 +200,7 @@ export default function CompleteProfile() {
               <select
                 value={form.goalId}
                 onChange={(event) => updateField('goalId', event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white"
+                className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
               >
                 <option value="">Select goal</option>
                 {goals.map((goal) => (
@@ -226,7 +226,7 @@ export default function CompleteProfile() {
 function Field({ label, error, icon: Icon, children }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-200">
+      <span className="mb-2 flex items-center gap-2 text-sm font-medium text-app">
         <Icon className="h-4 w-4 text-emerald-400" />
         {label}
       </span>

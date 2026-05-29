@@ -19,6 +19,14 @@
   --text-secondary: #6B7280;
   --border-color: #E5E7EB;
 
+  /* App theme tokens (use these in components/pages). */
+  --app-bg: #F8FAFC;
+  --app-surface: #FFFFFF;
+  --app-card: #FFFFFF;
+  --app-border: #E2E8F0;
+  --app-text: #0F172A;
+  --app-muted: #475569;
+
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
@@ -40,6 +48,14 @@
   --text-secondary: #CBD5E1;
   --border-color: #475569;
 
+  /* Keep Dark mode look identical to the current design. */
+  --app-bg: #0B1120;
+  --app-surface: #0F172A;
+  --app-card: #1E293B;
+  --app-border: #334155;
+  --app-text: #F1F5F9;
+  --app-muted: #CBD5E1;
+
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
@@ -59,8 +75,8 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--app-bg);
+  color: var(--app-text);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -142,6 +158,20 @@ input:focus,textarea:focus,select:focus {
    ============================================ */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;}
 *:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px;}
+
+/* ============================================
+   APP TOKEN UTILITIES
+   ============================================ */
+@layer utilities {
+  .bg-app { background-color: var(--app-bg); }
+  .bg-app-surface { background-color: var(--app-surface); }
+  .bg-app-card { background-color: var(--app-card); }
+
+  .text-app { color: var(--app-text); }
+  .text-app-muted { color: var(--app-muted); }
+
+  .border-app { border-color: var(--app-border); }
+}
 
 /* ============================================
    PRINT

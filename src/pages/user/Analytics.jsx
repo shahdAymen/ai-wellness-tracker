@@ -47,7 +47,7 @@ export default function Analytics() {
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Analytics</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Today&apos;s backend summary</h1>
+          <h1 className="mt-2 text-3xl font-bold text-app">Today&apos;s backend summary</h1>
         </div>
         <EmptyState
           title="Not enough data available to generate analytics."
@@ -67,8 +67,8 @@ export default function Analytics() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Analytics</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Today&apos;s backend summary</h1>
-          <p className="mt-2 text-sm text-slate-300">
+          <h1 className="mt-2 text-3xl font-bold text-app">Today&apos;s backend summary</h1>
+          <p className="mt-2 text-sm text-app-muted">
             Daily analytics stay graceful for new users and sparse accounts instead of failing on empty backend data.
           </p>
         </div>
@@ -96,21 +96,21 @@ export default function Analytics() {
         <Metric icon={Activity} label="Chest" value={stats?.chest ?? 0} unit="cm" />
       </div>
 
-      <Card className="border border-slate-700 bg-slate-900">
+      <Card className="border border-app">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">Meal completion</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="text-xl font-bold text-app">Meal completion</h2>
+            <p className="mt-1 text-sm text-app-muted">
               {summary?.completedMeals || 0} of {summary?.totalMeals || 0} planned meals
             </p>
           </div>
           <span className="text-2xl font-bold text-emerald-400">{mealProgress}%</span>
         </div>
-        <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-800">
+        <div className="mt-5 h-3 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
           <div className="h-full rounded-full bg-emerald-500" style={{ width: `${mealProgress}%` }} />
         </div>
         {emptyStates.summary && (
-          <p className="mt-4 text-sm text-slate-400">
+          <p className="mt-4 text-sm text-app-muted">
             No meal summary is available yet. Generate a plan and complete meals to populate this section.
           </p>
         )}
@@ -121,10 +121,10 @@ export default function Analytics() {
 
 function Metric({ icon: Icon, label, value, unit }) {
   return (
-    <Card className="border border-slate-700 bg-slate-900">
+    <Card className="border border-app">
       <Icon className="h-6 w-6 text-emerald-400" />
-      <p className="mt-4 text-sm text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-white">
+      <p className="mt-4 text-sm text-app-muted">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-app">
         {Number(value || 0).toLocaleString()} {unit}
       </p>
     </Card>

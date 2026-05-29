@@ -4,7 +4,7 @@ import Button from './Button';
 
 export function PageLoader({ label = 'Loading...' }) {
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-gray-500 dark:text-gray-300">
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-app-muted">
       <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
       <p className="text-sm">{label}</p>
     </div>
@@ -12,7 +12,7 @@ export function PageLoader({ label = 'Loading...' }) {
 }
 
 export function SkeletonBlock({ className = '' }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700 ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-black/10 dark:bg-white/10 ${className}`} />;
 }
 
 export function ErrorState({ title = 'Something went wrong', message, onRetry }) {
@@ -37,10 +37,10 @@ export function ErrorState({ title = 'Something went wrong', message, onRetry })
 
 export function EmptyState({ title = 'No data yet', message, action }) {
   return (
-    <div className="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800">
-      <Inbox className="mx-auto h-10 w-10 text-gray-400" />
-      <h3 className="mt-3 text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
-      {message && <p className="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">{message}</p>}
+    <div className="rounded-lg border border-dashed border-app bg-app-card p-8 text-center">
+      <Inbox className="mx-auto h-10 w-10 text-app-muted" />
+      <h3 className="mt-3 text-base font-semibold text-app">{title}</h3>
+      {message && <p className="mx-auto mt-2 max-w-md text-sm text-app-muted">{message}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

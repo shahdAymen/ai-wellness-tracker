@@ -54,19 +54,19 @@ export default function UserLayout() {
   }, [hasCompletedProfile, location.pathname, navigate]);
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen flex bg-app text-app">
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-app-surface border-r border-app
         transform transition-transform duration-200
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="h-full flex flex-col">
           {/* Logo */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-app">
             <div className="flex items-center gap-2">
               <Activity className="w-8 h-8 text-emerald-500" />
-              <span className="text-xl text-gray-900 dark:text-white">
+              <span className="text-xl text-app">
                 VitalityAI
               </span>
             </div>
@@ -93,7 +93,7 @@ export default function UserLayout() {
                   ${
                     isActive
                       ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      : 'text-app-muted hover:bg-black/5 dark:hover:bg-white/10'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -104,7 +104,7 @@ export default function UserLayout() {
           </nav>
 
           {/* Logout */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-app">
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
@@ -120,12 +120,12 @@ export default function UserLayout() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">       
         {/* Top Bar */}
-        <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <header className="bg-app-surface border-b border-app px-6 py-4">
           <div className="flex items-center">
             {/* Left (menu button) */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="lg:hidden p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"
             >
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -136,10 +136,10 @@ export default function UserLayout() {
 
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm text-gray-900 dark:text-white">
+                  <p className="text-sm text-app">
                     {user?.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-app-muted">
                     {user?.email}
                   </p>
                 </div>
@@ -154,7 +154,7 @@ export default function UserLayout() {
         {isApiLoading && <div className="h-1 w-full bg-emerald-500/80" />}
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto bg-[#0B1120]">
+        <main className="flex-1 p-6 overflow-y-auto bg-app">
           <Outlet />
         </main>
       </div>

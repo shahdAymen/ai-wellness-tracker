@@ -12,21 +12,24 @@ export default function Restaurants() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadRestaurants = useCallback(async (location = coords) => {
-    if (!location) return;
+  const loadRestaurants = useCallback(
+    async (location = coords) => {
+      if (!location) return;
 
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await restaurantAPI.getNearby(location.lat, location.lng);
-      setRestaurants(Array.isArray(data?.restaurants) ? data.restaurants : []);
-    } catch (err) {
-      setError(err);
-      setRestaurants([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [coords]);
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await restaurantAPI.getNearby(location.lat, location.lng);
+        setRestaurants(Array.isArray(data?.restaurants) ? data.restaurants : []);
+      } catch (err) {
+        setError(err);
+        setRestaurants([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [coords]
+  );
 
   const requestLocation = useCallback(() => {
     setError(null);
@@ -73,8 +76,8 @@ export default function Restaurants() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Restaurants</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Healthy places near you</h1>
-          <p className="mt-2 text-sm text-slate-300">
+          <h1 className="mt-2 text-3xl font-bold text-app">Healthy places near you</h1>
+          <p className="mt-2 text-sm text-app-muted">
             Uses browser geolocation and the documented nearby restaurant endpoint.
           </p>
         </div>
@@ -90,20 +93,20 @@ export default function Restaurants() {
         </div>
       </div>
 
-      <Card className="border border-slate-700 bg-slate-900">
+      <Card className="border border-app">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-app-muted" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name, category, cuisine, or area"
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 py-3 pl-11 pr-4 text-white"
+            className="w-full rounded-lg border border-app bg-app-surface py-3 pl-11 pr-4 text-app"
           />
         </div>
       </Card>
 
       {loading && (
-        <div className="flex items-center gap-2 text-slate-300">
+        <div className="flex items-center gap-2 text-app-muted">
           <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
           Finding nearby restaurants...
         </div>
@@ -117,12 +120,12 @@ export default function Restaurants() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {filtered.map((restaurant) => (
-          <Card key={restaurant.id || restaurant.name} className="border border-slate-700 bg-slate-900">
+          <Card key={restaurant.id || restaurant.name} className="border border-app">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-white">{restaurant.name}</h2>
-                <p className="mt-1 text-sm text-slate-400">
-                  {restaurant.category || 'Restaurant'} · {restaurant.cuisine_type || 'Cuisine'}
+                <h2 className="text-xl font-bold text-app">{restaurant.name}</h2>
+                <p className="mt-1 text-sm text-app-muted">
+                  {restaurant.category || 'Restaurant'} - {restaurant.cuisine_type || 'Cuisine'}
                 </p>
               </div>
               {restaurant.distance_km != null && (
@@ -132,7 +135,7 @@ export default function Restaurants() {
               )}
             </div>
 
-            <div className="mt-5 space-y-3 text-sm text-slate-300">
+            <div className="mt-5 space-y-3 text-sm text-app-muted">
               {restaurant.address && (
                 <div className="flex gap-2">
                   <MapPin className="mt-0.5 h-4 w-4 text-emerald-400" />
@@ -154,7 +157,7 @@ export default function Restaurants() {
                   href={restaurant.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-emerald-300 hover:text-emerald-200"
+                  className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 dark:text-emerald-300 dark:hover:text-emerald-200"
                 >
                   <Globe className="h-4 w-4" />
                   Website

@@ -48,8 +48,8 @@ export default function DeviceSync() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Google Fit</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Connected activity summary</h1>
-          <p className="mt-2 text-sm text-slate-300">
+          <h1 className="mt-2 text-3xl font-bold text-app">Connected activity summary</h1>
+          <p className="mt-2 text-sm text-app-muted">
             Google Fit data is optional. When it is not connected, this page stays friendly and actionable.
           </p>
         </div>
@@ -92,10 +92,10 @@ export default function DeviceSync() {
 
 function Metric({ icon: Icon, label, value, suffix = '' }) {
   return (
-    <Card className="border border-slate-700 bg-slate-900">
+    <Card className="border border-app">
       <Icon className="h-7 w-7 text-emerald-400" />
-      <p className="mt-4 text-sm text-slate-400">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-white">
+      <p className="mt-4 text-sm text-app-muted">{label}</p>
+      <p className="mt-1 text-3xl font-bold text-app">
         {Number(value || 0).toLocaleString()} {suffix}
       </p>
     </Card>

@@ -177,7 +177,7 @@ export default function UserDashboard() {
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Today</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Welcome back, {user?.name || user?.email}</h1>
+          <h1 className="mt-2 text-3xl font-bold text-app">Welcome back, {user?.name || user?.email}</h1>
         </div>
         <EmptyState
           title="No dashboard data available yet."
@@ -198,8 +198,8 @@ export default function UserDashboard() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Today</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Welcome back, {user?.name || user?.email}</h1>
-          <p className="mt-2 text-sm text-slate-300">
+          <h1 className="mt-2 text-3xl font-bold text-app">Welcome back, {user?.name || user?.email}</h1>
+          <p className="mt-2 text-sm text-app-muted">
             Your dashboard is powered by live VitalityAI metrics for meals, stats, hydration, and
             optional Google Fit activity.
           </p>
@@ -221,17 +221,17 @@ export default function UserDashboard() {
         {metrics.map((metric) => {
           const Icon = metric.icon;
           return (
-            <Card key={metric.label} className="border border-slate-700 bg-slate-900">
+            <Card key={metric.label} className="border border-app">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-slate-400">{metric.label}</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{metric.value}</p>
-                  <p className="mt-1 text-sm text-slate-400">{metric.helper}</p>
+                  <p className="text-sm text-app-muted">{metric.label}</p>
+                  <p className="mt-2 text-3xl font-bold text-app">{metric.value}</p>
+                  <p className="mt-1 text-sm text-app-muted">{metric.helper}</p>
                 </div>
                 <Icon className={`h-7 w-7 ${metric.color}`} />
               </div>
               {metric.progress != null && (
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                   <div className="h-full rounded-full bg-emerald-500" style={{ width: `${metric.progress}%` }} />
                 </div>
               )}
@@ -241,18 +241,18 @@ export default function UserDashboard() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
-        <Card className="border border-slate-700 bg-slate-900">
+        <Card className="border border-app">
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white">Meal Progress</h2>
-              <p className="text-sm text-slate-400">
+              <h2 className="text-xl font-bold text-app">Meal Progress</h2>
+              <p className="text-sm text-app-muted">
                 {displayDashboard?.completedMeals || 0} of {displayDashboard?.totalMeals || 0} meals completed
               </p>
             </div>
             <CalendarDays className="h-6 w-6 text-emerald-400" />
           </div>
 
-          <div className="mb-3 h-3 overflow-hidden rounded-full bg-slate-800">
+          <div className="mb-3 h-3 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
             <div className="h-full rounded-full bg-emerald-500" style={{ width: `${mealProgress}%` }} />
           </div>
           <p className="mb-5 text-sm font-medium text-emerald-300">{Math.round(mealProgress)}% complete today</p>
@@ -276,12 +276,12 @@ export default function UserDashboard() {
                   className={`flex items-center justify-between gap-4 rounded-lg border p-4 transition ${
                     meal.isCompleted
                       ? 'border-emerald-500/60 bg-emerald-500/10'
-                      : 'border-slate-700 bg-slate-950'
+                      : 'border-app bg-app-surface'
                   }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className={`font-semibold ${meal.isCompleted ? 'text-emerald-100' : 'text-white'}`}>
+                      <p className={`font-semibold ${meal.isCompleted ? 'text-emerald-100' : 'text-app'}`}>
                         {meal.nameEn || meal.nameAr}
                       </p>
                       {meal.isCompleted && (
@@ -290,7 +290,7 @@ export default function UserDashboard() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-app-muted">
                       {meal.mealType} - {Math.round(meal.calories || 0)} kcal - {meal.protein || 0}g protein
                     </p>
                   </div>
@@ -316,8 +316,8 @@ export default function UserDashboard() {
           )}
         </Card>
 
-        <Card className="border border-slate-700 bg-slate-900">
-          <h2 className="text-xl font-bold text-white">Activity Metrics</h2>
+        <Card className="border border-app">
+          <h2 className="text-xl font-bold text-app">Activity Metrics</h2>
           {emptyStates.googleFitIntegrationMissing ? (
             <div className="mt-5">
               <EmptyState
@@ -348,9 +348,9 @@ export default function UserDashboard() {
 
 function MetricRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-      <span className="text-sm text-slate-400">{label}</span>
-      <span className="font-semibold text-white">{value}</span>
+    <div className="flex items-center justify-between border-b border-app pb-3">
+      <span className="text-sm text-app-muted">{label}</span>
+      <span className="font-semibold text-app">{value}</span>
     </div>
   );
 }
