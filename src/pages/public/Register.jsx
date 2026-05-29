@@ -18,6 +18,8 @@ export default function Register() {
   const { register } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
 
   const [formData, setFormData] = useState({
     name: "",
@@ -27,15 +29,39 @@ export default function Register() {
   });
 
   // =========================
+  // VALIDATE
+  // =========================
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) {
+      newErrors.name = 'Full name is required';
+    }
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Confirm password is required';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // =========================
   // REGISTER
   // =========================
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
+    setGeneralError('');
+    if (!validateForm()) return;
 
     try {
       setLoading(true);
@@ -47,11 +73,10 @@ export default function Register() {
         confirmPassword: formData.confirmPassword,
       });
 
-      alert("Account created successfully");
-      navigate("/login");
+      navigate("/user");
     } catch (error) {
       console.error(error);
-      alert("Registration failed");
+      setGeneralError(error.message || "Registration failed. Please check details and try again.");
     } finally {
       setLoading(false);
     }
@@ -84,6 +109,12 @@ export default function Register() {
           </p>
         </div>
 
+        {generalError && (
+          <div className="p-4 mb-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-medium">
+            {generalError}
+          </div>
+        )}
+
         {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -98,18 +129,27 @@ export default function Register() {
 
               <input
                 type="text"
-                required
                 value={formData.name}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     ...formData,
                     name: e.target.value,
-                  })
-                }
+                  });
+                  if (errors.name) setErrors(prev => ({ ...prev, name: '' }));
+                }}
                 placeholder="John Doe"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
+                  errors.name
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
               />
             </div>
+            {errors.name && (
+              <span className="text-red-500 dark:text-rose-400 text-xs mt-1 block font-medium">
+                {errors.name}
+              </span>
+            )}
           </div>
 
           {/* EMAIL */}
@@ -123,18 +163,27 @@ export default function Register() {
 
               <input
                 type="email"
-                required
                 value={formData.email}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     ...formData,
                     email: e.target.value,
-                  })
-                }
+                  });
+                  if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                }}
                 placeholder="example@email.com"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
+                  errors.email
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
               />
             </div>
+            {errors.email && (
+              <span className="text-red-500 dark:text-rose-400 text-xs mt-1 block font-medium">
+                {errors.email}
+              </span>
+            )}
           </div>
 
           {/* PASSWORD */}
@@ -148,18 +197,27 @@ export default function Register() {
 
               <input
                 type="password"
-                required
                 value={formData.password}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     ...formData,
                     password: e.target.value,
-                  })
-                }
+                  });
+                  if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                }}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
+                  errors.password
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
               />
             </div>
+            {errors.password && (
+              <span className="text-red-500 dark:text-rose-400 text-xs mt-1 block font-medium">
+                {errors.password}
+              </span>
+            )}
           </div>
 
           {/* CONFIRM PASSWORD */}
@@ -173,18 +231,27 @@ export default function Register() {
 
               <input
                 type="password"
-                required
                 value={formData.confirmPassword}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     ...formData,
                     confirmPassword: e.target.value,
-                  })
-                }
+                  });
+                  if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                }}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
+                  errors.confirmPassword
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
               />
             </div>
+            {errors.confirmPassword && (
+              <span className="text-red-500 dark:text-rose-400 text-xs mt-1 block font-medium">
+                {errors.confirmPassword}
+              </span>
+            )}
           </div>
 
           {/* BUTTON */}

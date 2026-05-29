@@ -52,12 +52,10 @@ export function TrackWorkoutModal({ isOpen, onClose }) {
     if (!selectedWorkout) return;
 
     try {
-      await workoutAPI.addWorkout({
-        exerciseName: selectedWorkout.name,
+      await workoutAPI.log({
+        exercisedId: selectedWorkout.id,
         sets: 1,
         reps: 1,
-        duration: selectedWorkout.duration,
-        caloriesBurned: selectedWorkout.calories,
         date: new Date().toISOString(),
       });
 

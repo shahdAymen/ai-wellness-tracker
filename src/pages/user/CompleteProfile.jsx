@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
-import { GeneratePlanModal } from '../../components/Modals/GeneratePlanModal.JSX';
+import { GeneratePlanModal } from '../../components/Modals/GeneratePlanModal';
 
 export default function Profile() {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -10,13 +10,43 @@ import { ThemeToggle } from '../../components/UI/ThemeToggle';
 export function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password, true);
-    navigate('/admin');
+    setGeneralError('');
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+      await login(email, password, true);
+      navigate('/admin');
+    } catch (err) {
+      console.error(err);
+      setGeneralError(err.message || 'Login failed. Please check your admin credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,6 +65,12 @@ export function AdminLogin() {
           <p className="text-gray-400">Authorized personnel only</p>
         </div>
 
+        {generalError && (
+          <div className="p-4 mb-4 rounded-xl bg-red-950/20 border border-red-900/50 text-red-400 text-sm font-medium">
+            {generalError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm mb-2 text-gray-300">Admin Email</label>
@@ -43,12 +79,23 @@ export function AdminLogin() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg bg-slate-700 text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
+                }}
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg bg-slate-700 text-white focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition ${
+                  errors.email
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-slate-600'
+                }`}
                 placeholder="admin@vitalityai.com"
-                required
               />
             </div>
+            {errors.email && (
+              <span className="text-red-400 text-xs mt-1 block font-medium">
+                {errors.email}
+              </span>
+            )}
           </div>
 
           <div>
@@ -58,16 +105,27 @@ export function AdminLogin() {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg bg-slate-700 text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
+                }}
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg bg-slate-700 text-white focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition ${
+                  errors.password
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-slate-600'
+                }`}
                 placeholder="••••••••"
-                required
               />
             </div>
+            {errors.password && (
+              <span className="text-red-400 text-xs mt-1 block font-medium">
+                {errors.password}
+              </span>
+            )}
           </div>
 
-          <Button type="submit" variant="danger" className="w-full" size="lg">
-            Access Admin Panel
+          <Button type="submit" variant="danger" className="w-full" size="lg" disabled={loading}>
+            {loading ? 'Accessing Admin Panel...' : 'Access Admin Panel'}
           </Button>
         </form>
 

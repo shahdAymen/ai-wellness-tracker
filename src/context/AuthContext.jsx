@@ -89,7 +89,9 @@ export function AuthProvider({ children }) {
         confirmPassword: data.confirmPassword,
       });
 
-      return true; // FIXED
+      // Automatically login the user after successful registration
+      await login(data.email, data.password);
+      return true;
 
     } catch (error) {
       console.error("Register failed:", error);

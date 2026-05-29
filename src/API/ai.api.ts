@@ -13,6 +13,9 @@ export interface WeeklyPlan {
 }
 
 export const aiAPI = {
-  generateWeeklyPlan: () =>
-    request<WeeklyPlan>(`${API_ROOT_URL}/AI/generate-weekly-plan`, { method: 'POST' }),
+  generateWeeklyPlan: (data: any) =>
+    request<WeeklyPlan>(`${API_ROOT_URL}/AI/generate-weekly-plan`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };

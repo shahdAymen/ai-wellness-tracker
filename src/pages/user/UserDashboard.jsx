@@ -27,7 +27,8 @@ import { TrackWorkoutModal } from '../../components/Modals/TrackWorkoutModal';
 import {
   dashboardAPI,
   mealsAPI,
-  workoutAPI
+  workoutAPI,
+  userAPI
 } from '../../API';
 
 export function UserDashboard() {
@@ -48,15 +49,62 @@ export function UserDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [workoutsLoading, setWorkoutsLoading] = useState(false);
+  const [mustGeneratePlan, setMustGeneratePlan] = useState(false);
 
   // =========================
   // INIT
   // =========================
   useEffect(() => {
     setMounted(true);
-    fetchDashboardData();
-    fetchWorkouts();
+    initializeDashboard();
   }, []);
+
+  const initializeDashboard = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch user profile to check if they have a plan
+      const userProfile = await userAPI.getMe();
+      const localPlan = localStorage.getItem(`plan_generated_${userProfile.email}`);
+      
+      if ((!userProfile.height || !userProfile.weight || !userProfile.goal) && !localPlan) {
+        setMustGeneratePlan(true);
+        setLoading(false);
+        return;
+      }
+      
+      // 2. Fetch dashboard data & workouts if plan exists
+      await Promise.all([
+        fetchDashboardData(),
+        fetchWorkouts()
+      ]);
+    } catch (err) {
+      console.error("Initialization error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGeneratePlanSuccess = async () => {
+    try {
+      const userProfile = await userAPI.getMe();
+      localStorage.setItem(`plan_generated_${userProfile.email}`, 'true');
+    } catch (err) {
+      console.error("Error setting local storage plan flag:", err);
+    }
+
+    setMustGeneratePlan(false);
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchDashboardData(),
+        fetchWorkouts()
+      ]);
+    } catch (err) {
+      console.error("Error reloading dashboard data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // =========================
   // DASHBOARD DATA
@@ -166,6 +214,17 @@ export function UserDashboard() {
             mealPlanId: meal.mealPlanId ?? meal.id,
           }))
       : [];
+
+  if (loading) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-12 h-12 animate-spin text-emerald-400" />
+        <p className="text-gray-400 text-sm font-medium animate-pulse">
+          Loading your wellness space...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -365,7 +424,9 @@ export function UserDashboard() {
 
       {/* MODALS */}
       <GeneratePlanModal
-        isOpen={planOpen}
+        isOpen={mustGeneratePlan || planOpen}
+        preventClose={mustGeneratePlan}
+        onGenerateSuccess={handleGeneratePlanSuccess}
         onClose={() => setPlanOpen(false)}
       />
 

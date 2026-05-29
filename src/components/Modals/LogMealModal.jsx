@@ -7,6 +7,7 @@ export function LogMealModal({ isOpen, onClose }) {
   const [mealType, setMealType] = useState('');
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [isLogged, setIsLogged] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const mealTypes = [
     { id: 'breakfast', name: 'فطور', icon: '🌅' },
@@ -46,7 +47,19 @@ export function LogMealModal({ isOpen, onClose }) {
     0
   );
 
+  const handleSelectMealType = (typeId) => {
+    setMealType(typeId);
+    if (errors.mealType) {
+      setErrors((prev) => ({ ...prev, mealType: '' }));
+    }
+  };
+
   const handleLogMeal = async () => {
+    if (!mealType) {
+      setErrors({ mealType: 'Please select a meal type (Breakfast, Lunch, Dinner, or Snack) before logging.' });
+      return;
+    }
+
     try {
       setIsLogged(true);
 
@@ -78,6 +91,7 @@ export function LogMealModal({ isOpen, onClose }) {
         setIsLogged(false);
         setMealType('');
         setSelectedFoods([]);
+        setErrors({});
       }, 1200);
 
     } catch (error) {
@@ -129,11 +143,13 @@ export function LogMealModal({ isOpen, onClose }) {
                       {mealTypes.map((type) => (
                         <button
                           key={type.id}
-                          onClick={() => setMealType(type.id)}
+                          onClick={() => handleSelectMealType(type.id)}
                           className={`p-4 border-4 transition-all ${
                             mealType === type.id
-                              ? 'bg-[#CCFF00] text-black'
-                              : 'bg-[#151935] text-white'
+                              ? 'bg-[#CCFF00] text-black border-black'
+                              : 'bg-[#151935] text-white border-transparent hover:border-[#CCFF00]/50'
+                          } ${
+                            errors.mealType ? 'border-red-500' : ''
                           }`}
                         >
                           <div className="text-3xl">{type.icon}</div>
@@ -141,6 +157,12 @@ export function LogMealModal({ isOpen, onClose }) {
                         </button>
                       ))}
                     </div>
+
+                    {errors.mealType && (
+                      <div className="text-red-400 text-sm font-bold border-4 border-red-500/50 p-3 bg-red-950/20">
+                        {errors.mealType}
+                      </div>
+                    )}
 
                     {/* Foods */}
                     {mealType && (
