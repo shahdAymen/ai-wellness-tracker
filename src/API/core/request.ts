@@ -20,7 +20,16 @@ export async function request<T>(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed: ${response.status}`);
+    let errorMessage = text;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') {
+        errorMessage = parsed.description || parsed.message || parsed.error || text;
+      }
+    } catch (e) {
+      // If parsing fails, fall back to the raw text
+    }
+    throw new Error(errorMessage || `Request failed: ${response.status}`);
   }
 
   const contentType = response.headers.get('content-type');

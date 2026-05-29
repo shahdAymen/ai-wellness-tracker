@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, Bell, Globe } from 'lucide-react';
+import { User, Lock, Bell, Globe, Eye, EyeOff } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 import Button from '../../components/UI/Button';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +14,8 @@ export default function Settings() {
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [securityErrors, setSecurityErrors] = useState({});
   const [securitySuccess, setSecuritySuccess] = useState('');
 
@@ -142,17 +144,30 @@ export default function Settings() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">Current Password</label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value);
-                  if (securityErrors.currentPassword) setSecurityErrors(prev => ({ ...prev, currentPassword: '' }));
-                }}
-                className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
-                  securityErrors.currentPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value);
+                    if (securityErrors.currentPassword) setSecurityErrors(prev => ({ ...prev, currentPassword: '' }));
+                  }}
+                  className={`w-full pl-4 pr-10 py-2 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
+                    securityErrors.currentPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {securityErrors.currentPassword && (
                 <span className="text-red-500 dark:text-rose-400 text-xs mt-1 block font-medium">
                   {securityErrors.currentPassword}
@@ -161,17 +176,30 @@ export default function Settings() {
             </div>
             <div>
               <label className="block text-sm mb-2 text-gray-700 dark:text-gray-300">New Password</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  if (securityErrors.newPassword) setSecurityErrors(prev => ({ ...prev, newPassword: '' }));
-                }}
-                className={`w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
-                  securityErrors.newPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    if (securityErrors.newPassword) setSecurityErrors(prev => ({ ...prev, newPassword: '' }));
+                  }}
+                  className={`w-full pl-4 pr-10 py-2 border rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${
+                    securityErrors.newPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               {securityErrors.newPassword && (
                 <span className="text-red-500 dark:text-rose-400 text-xs mt-1 block font-medium">
                   {securityErrors.newPassword}
