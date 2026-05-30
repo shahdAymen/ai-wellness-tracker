@@ -69,6 +69,7 @@ export default function AIPlanner() {
     setGenerating(true);
     try {
       await aiAPI.generateWeeklyPlan();
+      localStorage.setItem('plan_generation_date', new Date().toISOString());
       showToast({
         type: 'success',
         title: 'Plan generated',

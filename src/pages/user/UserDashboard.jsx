@@ -53,6 +53,18 @@ export default function UserDashboard() {
     setDisplayMeals(todayMeals);
   }, [todayMeals]);
 
+  useEffect(() => {
+    let lastDate = new Date().toDateString();
+    const interval = setInterval(() => {
+      const currentDate = new Date().toDateString();
+      if (currentDate !== lastDate) {
+        lastDate = currentDate;
+        reload();
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [reload]);
+
   const metrics = useMemo(() => {
     const water = waterToday?.totalAmount ?? displayDashboard?.waterIntake ?? 0;
     const steps = googleFit?.steps ?? displayDashboard?.steps ?? 0;
@@ -114,6 +126,7 @@ export default function UserDashboard() {
     setGenerating(true);
     try {
       await aiAPI.generateWeeklyPlan();
+      localStorage.setItem('plan_generation_date', new Date().toISOString());
       showToast({
         type: 'success',
         title: 'AI plan generated',
