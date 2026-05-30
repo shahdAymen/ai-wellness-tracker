@@ -16,9 +16,12 @@ import { UserCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
 import { useGlobalLoading } from '../../context/LoadingContext';
+import VigoCoach from '../Chat/VigoCoach';
+import { Sparkles } from 'lucide-react';
 
 export default function UserLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isVigoOpen, setIsVigoOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, hasCompletedProfile } = useAuth();
@@ -134,6 +137,15 @@ export default function UserLayout() {
             <div className="ml-auto flex items-center gap-4">
               <ThemeToggle />
 
+              <button
+                onClick={() => setIsVigoOpen(true)}
+                className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-app-muted hover:text-emerald-500 transition-colors relative"
+                title="Open Vigo AI Coach"
+              >
+                <Sparkles className="w-5 h-5 text-emerald-500" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />
+              </button>
+
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm text-app">
@@ -165,6 +177,20 @@ export default function UserLayout() {
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
+      )}
+
+      {/* Vigo AI Wellness Coach */}
+      <VigoCoach isOpen={isVigoOpen} onClose={() => setIsVigoOpen(false)} />
+
+      {/* Vigo Floating Toggle Action Button */}
+      {!isVigoOpen && (
+        <button
+          onClick={() => setIsVigoOpen(true)}
+          className="vigo-float-btn animate-fade-in"
+          title="Chat with Vigo AI Coach"
+        >
+          <Sparkles size={24} />
+        </button>
       )}
     </div>
   );

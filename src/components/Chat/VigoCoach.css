@@ -1,0 +1,587 @@
+/* VigoCoach.css */
+
+/* ==========================================================================
+   TRANSITIONS & WRAPPERS
+   ========================================================================== */
+.vigo-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.vigo-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vigo-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 440px;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease;
+  overflow: hidden;
+}
+
+.dark .vigo-sidebar {
+  background: rgba(15, 23, 42, 0.8);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.3);
+}
+
+.vigo-sidebar.open {
+  transform: translateX(0);
+}
+
+/* Background Animated Orbs for Premium Vibe */
+.vigo-bg-orb {
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+  animation: float-orb 15s infinite alternate ease-in-out;
+}
+
+.dark .vigo-bg-orb {
+  opacity: 0.12;
+}
+
+.vigo-orb-1 {
+  top: -50px;
+  left: -50px;
+  background: radial-gradient(circle, var(--color-primary) 0%, rgba(16, 185, 129, 0) 70%);
+}
+
+.vigo-orb-2 {
+  bottom: 10%;
+  right: -50px;
+  background: radial-gradient(circle, var(--color-secondary) 0%, rgba(59, 130, 246, 0) 70%);
+  animation-delay: -5s;
+}
+
+@keyframes float-orb {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(40px) scale(1.15); }
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+.vigo-header {
+  padding: 1.25rem;
+  border-b: 1px solid var(--app-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: 1;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .vigo-header {
+  background: rgba(15, 23, 42, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vigo-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.vigo-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  color: white;
+}
+
+.vigo-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--app-text);
+  line-height: 1.2;
+}
+
+.vigo-subtitle {
+  font-size: 0.75rem;
+  color: var(--app-muted);
+}
+
+.vigo-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vigo-header-btn {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: var(--app-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.vigo-header-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--app-text);
+}
+
+.dark .vigo-header-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   UPLOAD VIEW
+   ========================================================================== */
+.vigo-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.vigo-upload-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 1;
+}
+
+.vigo-dropzone {
+  border: 2px dashed var(--app-border);
+  border-radius: 20px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.dark .vigo-dropzone {
+  background: rgba(30, 41, 59, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.vigo-dropzone.dragging {
+  border-color: var(--color-primary);
+  background: rgba(16, 185, 129, 0.05);
+  transform: scale(1.02);
+}
+
+.vigo-dropzone.loading {
+  cursor: wait;
+}
+
+.vigo-upload-icon-box {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  transition: transform 0.3s ease;
+}
+
+.vigo-dropzone:hover .vigo-upload-icon-box {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.vigo-dropzone h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.vigo-dropzone p {
+  font-size: 0.875rem;
+  color: var(--app-muted);
+  max-width: 250px;
+}
+
+.vigo-browse-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  transition: all 0.2s ease;
+}
+
+.vigo-browse-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.vigo-hint {
+  font-size: 0.75rem;
+  color: var(--app-muted);
+}
+
+.vigo-processing-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vigo-pulse-text {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  animation: pulse-op 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-op {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.vigo-spin {
+  animation: vigo-spin-keyframes 1.2s infinite linear;
+}
+
+@keyframes vigo-spin-keyframes {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   CHAT AREA & BUBBLES
+   ========================================================================== */
+.vigo-chat-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.vigo-messages {
+  flex: 1;
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vigo-message-row {
+  display: flex;
+  width: 100%;
+  animation: bubble-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes bubble-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.vigo-message-row.user {
+  justify-content: flex-end;
+}
+
+.vigo-message-row.ai,
+.vigo-message-row.error {
+  justify-content: flex-start;
+}
+
+.vigo-bubble {
+  max-width: 80%;
+  padding: 0.875rem 1.125rem;
+  border-radius: 18px;
+  font-size: 0.925rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-line;
+}
+
+.vigo-message-row.user .vigo-bubble {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.vigo-message-row.ai .vigo-bubble {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+  border-bottom-left-radius: 4px;
+}
+
+.dark .vigo-message-row.ai .vigo-bubble {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vigo-message-row.error .vigo-bubble {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-bottom-left-radius: 4px;
+}
+
+.vigo-meta {
+  font-size: 0.7rem;
+  margin-top: 0.35rem;
+  opacity: 0.65;
+  text-align: right;
+  display: block;
+}
+
+.vigo-message-row.user .vigo-meta {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.vigo-message-row.ai .vigo-meta,
+.vigo-message-row.error .vigo-meta {
+  color: var(--app-muted);
+}
+
+/* Loading bubble */
+.vigo-loading-bubble {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+  color: var(--app-muted);
+}
+
+/* File Badge inside messages */
+.vigo-file-status-indicator {
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 12px;
+  margin: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  z-index: 1;
+}
+
+.vigo-file-status-indicator button {
+  background: transparent;
+  border: none;
+  padding: 0.25rem;
+  color: var(--color-primary);
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.vigo-file-status-indicator button:hover {
+  background: rgba(16, 185, 129, 0.12);
+  opacity: 1;
+}
+
+/* ==========================================================================
+   INPUT BOX
+   ========================================================================== */
+.vigo-input-area {
+  padding: 1.25rem;
+  border-t: 1px solid var(--app-border);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  z-index: 1;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .vigo-input-area {
+  background: rgba(15, 23, 42, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vigo-input-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dark .vigo-input-box {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.vigo-input-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.vigo-input-box textarea {
+  flex: 1;
+  background: transparent;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--app-text);
+  font-size: 0.925rem;
+  resize: none;
+  max-height: 100px;
+  padding: 0.4rem 0;
+  outline: none;
+  font-family: inherit;
+}
+
+.vigo-input-box textarea::placeholder {
+  color: var(--app-muted);
+  opacity: 0.8;
+}
+
+.vigo-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--color-primary);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.vigo-send-btn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: scale(1.05);
+}
+
+.vigo-send-btn:disabled {
+  background: var(--app-border);
+  color: var(--app-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.dark .vigo-send-btn:disabled {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vigo-input-footer {
+  font-size: 0.72rem;
+  color: var(--app-muted);
+  text-align: center;
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   FLOATING TOGGLE BUTTON
+   ========================================================================== */
+.vigo-float-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+  z-index: 998;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: float-pulse-glow 3s infinite ease-in-out;
+}
+
+.vigo-float-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+}
+
+.vigo-float-btn.active {
+  transform: rotate(90deg) scale(0.9);
+  background: var(--bg-tertiary);
+  color: var(--app-text);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--app-border);
+}
+
+.dark .vigo-float-btn.active {
+  background: var(--bg-secondary);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes float-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 28px rgba(16, 185, 129, 0.6);
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .vigo-sidebar {
+    width: 100vw;
+  }
+  .vigo-float-btn {
+    bottom: 16px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+  }
+}

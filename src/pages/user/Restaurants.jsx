@@ -13,7 +13,7 @@ export default function Restaurants() {
   const [error, setError] = useState(null);
 
   const loadRestaurants = useCallback(
-    async (location = coords) => {
+    async (location) => {
       if (!location) return;
 
       setLoading(true);
@@ -28,7 +28,7 @@ export default function Restaurants() {
         setLoading(false);
       }
     },
-    [coords]
+    []
   );
 
   const requestLocation = useCallback(() => {
