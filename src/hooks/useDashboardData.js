@@ -111,5 +111,11 @@ export function useDashboardData() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    const handler = () => load();
+    window.addEventListener('vitalityai:dashboard-refresh', handler);
+    return () => window.removeEventListener('vitalityai:dashboard-refresh', handler);
+  }, [load]);
+
   return { ...state, reload: load };
 }

@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Activity,
-  CalendarDays,
-  CheckCircle2,
-  Droplets,
-  Flame,
-  Footprints,
-  Moon,
-  RefreshCw,
+  import {
+    Activity,
+    CalendarDays,
+    CheckCircle2,
+    Dumbbell,
+    Droplets,
+    Flame,
+    Footprints,
+    Moon,
+    RefreshCw,
   Sparkles,
   Utensils,
 } from 'lucide-react';
@@ -17,6 +18,7 @@ import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusSt
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useDashboardData } from '../../hooks/useDashboardData';
+import { useCurrentWorkout, useToggleWorkoutExercise, getTodayDay } from '../../hooks/useWorkoutPlanner';
 import { aiAPI, mealsAPI } from '../../services/api';
 
 const WATER_GOAL_LITERS = 3;
@@ -40,10 +42,18 @@ export default function UserDashboard() {
     error,
     reload,
   } = useDashboardData();
+
+  // Workout data (separate React Query hook — loads independently)
+  const { data: workoutPlan, isLoading: workoutLoading } = useCurrentWorkout();
+  const toggleWorkoutMutation = useToggleWorkoutExercise();
+
   const [generating, setGenerating] = useState(false);
   const [mealBusyId, setMealBusyId] = useState(null);
+  const [workoutBusyId, setWorkoutBusyId] = useState(null);
   const [displayDashboard, setDisplayDashboard] = useState(null);
   const [displayMeals, setDisplayMeals] = useState([]);
+
+  const todayWorkoutDay = useMemo(() => getTodayDay(workoutPlan), [workoutPlan]);
 
   useEffect(() => {
     setDisplayDashboard(dashboard);
@@ -69,6 +79,9 @@ export default function UserDashboard() {
     const water = waterToday?.totalAmount ?? displayDashboard?.waterIntake ?? 0;
     const steps = googleFit?.steps ?? displayDashboard?.steps ?? 0;
     const caloriesBurned = googleFit?.caloriesBurned ?? displayDashboard?.caloriesBurned ?? 0;
+    const completedWorkouts = displayDashboard?.completedWorkouts ?? 0;
+    const totalWorkouts = displayDashboard?.totalWorkouts ?? 0;
+    const workoutProgress = pct(completedWorkouts, totalWorkouts);
 
     return [
       {
@@ -108,6 +121,14 @@ export default function UserDashboard() {
         icon: Footprints,
         color: 'text-blue-500',
         progress: pct(steps, STEP_GOAL),
+      },
+      {
+        label: 'Workouts',
+        value: `${Number(completedWorkouts || 0)} / ${Number(totalWorkouts || 0)}`,
+        helper: totalWorkouts ? `${Math.round(workoutProgress)}% complete` : 'Generate a workout plan',
+        icon: Dumbbell,
+        color: 'text-emerald-500',
+        progress: totalWorkouts ? workoutProgress : null,
       },
       {
         label: 'Sleep',
@@ -182,6 +203,28 @@ export default function UserDashboard() {
     }
   };
 
+  const handleToggleWorkoutExercise = async (exercise) => {
+    const id = exercise.id || exercise.workoutPlanId;
+    if (!id) return;
+    const nextCompleted = !exercise.isCompleted;
+
+    setWorkoutBusyId(id);
+    try {
+      await toggleWorkoutMutation.mutateAsync({
+        workoutPlanId: id,
+        nextCompleted,
+      });
+      showToast({
+        type: 'success',
+        title: nextCompleted ? 'Exercise completed' : 'Exercise marked incomplete',
+      });
+    } catch (err) {
+      showToast({ type: 'error', title: 'Exercise update failed', message: err.message });
+    } finally {
+      setWorkoutBusyId(null);
+    }
+  };
+
   if (loading) return <PageLoader label="Loading dashboard..." />;
   if (error) return <ErrorState message={error.message} onRetry={reload} />;
 
@@ -205,6 +248,13 @@ export default function UserDashboard() {
       </div>
     );
   }
+
+  // Today's workout derived from the workout plan query
+  const todayIsRest = Boolean(todayWorkoutDay?.isRestDay);
+  const todayExercises = Array.isArray(todayWorkoutDay?.exercises) ? todayWorkoutDay.exercises : [];
+  const todayExerciseTotal = Number(todayWorkoutDay?.totalExercises || 0);
+  const todayExerciseCompleted = Number(todayWorkoutDay?.completedExercises || 0);
+  const workoutCompletion = pct(todayExerciseCompleted, todayExerciseTotal);
 
   return (
     <div className="space-y-6">
@@ -253,7 +303,9 @@ export default function UserDashboard() {
         })}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
+      {/* ── Meal Progress + Today's Workout ── */}
+      <div className="grid gap-6 xl:grid-cols-2">
+        {/* Meal Progress */}
         <Card className="border border-app">
           <div className="mb-5 flex items-center justify-between">
             <div>
@@ -329,32 +381,154 @@ export default function UserDashboard() {
           )}
         </Card>
 
+        {/* Today's Workout */}
         <Card className="border border-app">
-          <h2 className="text-xl font-bold text-app">Activity Metrics</h2>
-          {emptyStates.googleFitIntegrationMissing ? (
-            <div className="mt-5">
-              <EmptyState
-                title="No Google Fit account connected."
-                message="Connect Google Fit to bring in steps, distance, heart rate, and sleep."
-                action={<Button onClick={() => (window.location.href = '/user/device-sync')}>Connect Google Fit</Button>}
-              />
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-app">Today's Workout</h2>
+              {todayWorkoutDay && !todayIsRest && (
+                <p className="text-sm text-app-muted">
+                  {todayWorkoutDay.focus ? `${todayWorkoutDay.focus} — ` : ''}
+                  {todayExerciseCompleted} of {todayExerciseTotal} exercises
+                </p>
+              )}
+              {todayWorkoutDay && todayIsRest && (
+                <p className="text-sm text-app-muted">Recovery day</p>
+              )}
+              {!todayWorkoutDay && !workoutLoading && (
+                <p className="text-sm text-app-muted">No workout scheduled</p>
+              )}
+            </div>
+            <Dumbbell className="h-6 w-6 text-emerald-400" />
+          </div>
+
+          {workoutLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+            </div>
+          ) : !todayWorkoutDay ? (
+            <EmptyState
+              title="No workout plan for today"
+              message="Generate a workout plan to see today's exercises and track completion."
+              action={
+                <Button onClick={() => (window.location.href = '/user/workouts')}>
+                  <Dumbbell className="h-4 w-4" />
+                  Go to Workouts
+                </Button>
+              }
+            />
+          ) : todayIsRest ? (
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+              <div className="flex items-center gap-3">
+                <Moon className="h-5 w-5 text-amber-400" />
+                <div>
+                  <p className="font-semibold text-app">Today is a recovery day</p>
+                  <p className="mt-1 text-sm text-app-muted">
+                    Rest, stretch, and recharge for tomorrow's session.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <>
-              <div className="mt-5 space-y-4">
-                <MetricRow label="Distance" value={`${Number(googleFit?.distanceKm || 0).toFixed(1)} km`} />
-                <MetricRow label="Active minutes" value={`${Number(googleFit?.activityMinutes || 0)} min`} />
-                <MetricRow label="Average heart rate" value={`${Number(googleFit?.averageHeartRate || 0).toFixed(0)} bpm`} />
+              <div className="mb-3 h-3 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${workoutCompletion}%` }} />
               </div>
-              {!googleFit && (
-                <p className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-                  Google Fit data is optional. Activity cards fall back to backend daily stats when available.
-                </p>
+              <p className="mb-5 text-sm font-medium text-emerald-300">
+                {Math.round(workoutCompletion)}% complete today
+              </p>
+
+              {todayExercises.length === 0 ? (
+                <EmptyState title="No exercises found." message="Your workout plan has no exercises for today." />
+              ) : (
+                <div className="space-y-3">
+                  {todayExercises.slice(0, 5).map((exercise) => {
+                    const exerciseId = exercise.id || exercise.workoutPlanId || exercise.exerciseId;
+                    return (
+                    <div
+                      key={exerciseId}
+                      className={`flex items-center justify-between gap-4 rounded-lg border p-4 transition ${
+                        exercise.isCompleted
+                          ? 'border-emerald-500/60 bg-emerald-500/10'
+                          : 'border-app bg-app-surface'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={`font-semibold ${exercise.isCompleted ? 'text-emerald-100' : 'text-app'}`}>
+                            {exercise.exerciseName}
+                          </p>
+                          {exercise.isCompleted && (
+                            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-200">
+                              Completed
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-app-muted">
+                          {exercise.sets} sets · {exercise.reps} reps
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className={`h-5 w-5 ${exercise.isCompleted ? 'text-emerald-300' : 'text-slate-500'}`} />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={exercise.isCompleted ? 'outline' : 'primary'}
+                          onClick={() => handleToggleWorkoutExercise(exercise)}
+                          disabled={workoutBusyId === (exercise.id || exercise.workoutPlanId)}
+                        >
+                          {workoutBusyId === (exercise.id || exercise.workoutPlanId)
+                            ? 'Saving...'
+                            : exercise.isCompleted
+                              ? 'Mark incomplete'
+                              : 'Complete'}
+                        </Button>
+                      </div>
+                    </div>
+                    );
+                  })}
+                  {todayExercises.length > 5 && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => (window.location.href = '/user/workouts')}
+                    >
+                      View all {todayExercises.length} exercises
+                    </Button>
+                  )}
+                </div>
               )}
             </>
           )}
         </Card>
       </div>
+
+      {/* ── Activity Metrics ── */}
+      <Card className="border border-app">
+        <h2 className="text-xl font-bold text-app">Activity Metrics</h2>
+        {emptyStates.googleFitIntegrationMissing ? (
+          <div className="mt-5">
+            <EmptyState
+              title="No Google Fit account connected."
+              message="Connect Google Fit to bring in steps, distance, heart rate, and sleep."
+              action={<Button onClick={() => (window.location.href = '/user/device-sync')}>Connect Google Fit</Button>}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 space-y-4">
+              <MetricRow label="Distance" value={`${Number(googleFit?.distanceKm || 0).toFixed(1)} km`} />
+              <MetricRow label="Active minutes" value={`${Number(googleFit?.activityMinutes || 0)} min`} />
+              <MetricRow label="Average heart rate" value={`${Number(googleFit?.averageHeartRate || 0).toFixed(0)} bpm`} />
+            </div>
+            {!googleFit && (
+              <p className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+                Google Fit data is optional. Activity cards fall back to backend daily stats when available.
+              </p>
+            )}
+          </>
+        )}
+      </Card>
     </div>
   );
 }

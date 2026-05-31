@@ -28,6 +28,7 @@ import Analytics from './pages/user/Analytics';
 import Restaurants from './pages/user/Restaurants';
 import Settings from './pages/user/Settings';
 import DeviceSync from './pages/user/DeviceSync';
+import Workouts from './pages/user/Workouts';
 
 // ===============================
 // ADMIN PAGES
@@ -95,6 +96,7 @@ function AppRoutes() {
         <Route path="planner" element={<AIPlanner />} />
         <Route path="protocol" element={<Navigate to="/user/planner" replace />} />
         <Route path="tracker" element={<Tracker />} />
+        <Route path="workouts" element={<Workouts />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="restaurants" element={<Restaurants />} />
         <Route path="settings" element={<Settings />} />
