@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, CheckCircle2, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
@@ -6,6 +7,7 @@ import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusSt
 import { useToast } from '../../context/ToastContext';
 import { usePlannerData } from '../../hooks/usePlannerData';
 import { aiAPI, mealsAPI } from '../../services/api';
+import AnimatedNumber from '../../components/UI/AnimatedNumber';
 
 function getCompletionPercent(day) {
   return day?.totalMeals ? Math.round((day.completedMeals / day.totalMeals) * 100) : 0;
@@ -132,14 +134,14 @@ export default function AIPlanner() {
 
   if (days.length === 0) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="space-y-8 max-w-7xl mx-auto font-sans">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-hairline dark:border-hairline-strong pb-6">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">AI Planner</p>
-            <h1 className="mt-2 text-3xl font-bold text-app">Weekly and monthly meal plans</h1>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">AI Planner</p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Weekly and monthly meal plans</h1>
           </div>
           <Button onClick={handleGenerate} disabled={generating}>
-            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
             {generating ? 'Generating plan...' : 'Generate plan'}
           </Button>
         </div>
@@ -148,7 +150,7 @@ export default function AIPlanner() {
           message="Generate a plan after completing your profile. The frontend will then display the persisted backend meals."
           action={
             <Button onClick={handleGenerate} disabled={generating}>
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
               Generate plan
             </Button>
           }
@@ -158,32 +160,32 @@ export default function AIPlanner() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-hairline dark:border-hairline-strong pb-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">AI Planner</p>
-          <h1 className="mt-2 text-3xl font-bold text-app">Weekly and monthly meal plans</h1>
-          <p className="mt-2 max-w-2xl text-sm text-app-muted">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">AI Planner</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Weekly and monthly meal plans</h1>
+          <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
             VitalityAI calculates target calories from your saved profile, stores the plan server-side,
-            and now supports completion actions directly from the planner.
+            and supports completion actions directly from the planner.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={reload}>
-            <RefreshCw className="h-4 w-4" />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={reload}>
+            <RefreshCw className="h-3.5 w-3.5" />
             Refresh
           </Button>
           <Button onClick={handleGenerate} disabled={generating}>
-            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
             {generating ? 'Generating plan...' : 'Generate plan'}
           </Button>
         </div>
       </div>
 
-      <Card className="border border-app">
+      <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex rounded-lg border border-app bg-app-surface p-1">
+          <div className="flex rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft p-1">
             {[
               ['weekly', 'Weekly'],
               ['monthly', 'Monthly'],
@@ -192,8 +194,8 @@ export default function AIPlanner() {
                 key={key}
                 type="button"
                 onClick={() => setActiveView(key)}
-                className={`rounded-md px-4 py-2 text-sm font-semibold ${
-                  activeView === key ? 'bg-emerald-500 text-white' : 'text-app-muted hover:bg-black/5 dark:hover:bg-white/10'
+                className={`rounded-sm px-4 py-2 text-xs font-semibold transition-all duration-200 ${
+                  activeView === key ? 'bg-primary text-ink' : 'text-ink-mute dark:text-ink-mute-2 hover:bg-hairline-cool dark:hover:bg-canvas-night-soft'
                 }`}
               >
                 {label}
@@ -208,149 +210,171 @@ export default function AIPlanner() {
           </div>
         </div>
         {(activeView === 'weekly' ? emptyStates.weekly : emptyStates.monthly) && (
-          <p className="mt-4 text-sm text-app-muted">
+          <p className="mt-4 text-xs text-ink-mute dark:text-ink-mute-2">
             This view is empty right now. Generate a plan to populate it.
           </p>
         )}
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {days.map((day, index) => (
-          <Card key={`${day.date || index}-${day.day}`} className="border border-app">
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-sm text-emerald-400">
-                  <CalendarDays className="h-4 w-4" />
-                  {day.day || `Day ${index + 1}`}
-                </div>
-                <h2 className="mt-1 text-xl font-bold text-app">
-                  {day.date ? new Date(day.date).toLocaleDateString() : `Plan day ${index + 1}`}
-                </h2>
-              </div>
-              <div className="text-right">
-                <span className="rounded-full bg-black/10 px-3 py-1 text-sm text-app dark:bg-white/10">
-                  {Math.round(day.totalCalories || 0)} kcal
-                </span>
-                <p className="mt-2 text-sm font-medium text-emerald-300">
-                  {getCompletionPercent(day)}% complete
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {(day.meals || []).length === 0 ? (
-                <p className="text-sm text-app-muted">No meals stored for this day.</p>
-              ) : (
-                day.meals.map((meal) => (
-                  <div
-                    key={`${meal.mealPlanId}-${meal.mealType}-${meal.nameEn}`}
-                    className={`rounded-lg border p-4 transition ${
-                      meal.isCompleted
-                        ? 'border-emerald-500/60 bg-emerald-500/10'
-                        : 'border-app bg-app-surface'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className={`font-semibold ${meal.isCompleted ? 'text-emerald-100' : 'text-app'}`}>
-                            {meal.nameEn || meal.nameAr}
-                          </p>
-                          {meal.isCompleted && (
-                            <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-200">
-                              Completed
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1 text-sm text-app-muted">
-                          {meal.mealType} - {Math.round(meal.calories || 0)} kcal
-                        </p>
-                      </div>
-                      <CheckCircle2 className={`h-5 w-5 ${meal.isCompleted ? 'text-emerald-300' : 'text-slate-500'}`} />
+        <AnimatePresence>
+          {days.map((day, index) => (
+            <motion.div 
+              key={`${day.date || index}-${day.day}`}
+              layout
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ type: "spring", stiffness: 150, damping: 20 }}
+            >
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+                <div className="mb-5 flex items-start justify-between gap-4 pb-4 border-b border-hairline dark:border-hairline-strong">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs text-primary font-semibold">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {day.day || `Day ${index + 1}`}
                     </div>
-
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <Button type="button" variant="outline" size="sm" onClick={() => openMeal(meal)}>
-                        Details
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={meal.isCompleted ? 'outline' : 'primary'}
-                        disabled={mealBusyId === meal.mealPlanId}
-                        onClick={() => toggleMeal(meal)}
-                      >
-                        {mealBusyId === meal.mealPlanId
-                          ? 'Saving...'
-                          : meal.isCompleted
-                            ? 'Mark incomplete'
-                            : 'Complete meal'}
-                      </Button>
-                    </div>
+                    <h2 className="mt-1 text-base font-semibold tracking-tight text-ink dark:text-on-dark">
+                      {day.date ? new Date(day.date).toLocaleDateString() : `Plan day ${index + 1}`}
+                    </h2>
                   </div>
-                ))
-              )}
-            </div>
-          </Card>
-        ))}
+                  <div className="text-right">
+                    <span className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong px-2.5 py-1 text-xs text-ink dark:text-on-dark font-medium">
+                      {Math.round(day.totalCalories || 0)} kcal
+                    </span>
+                    <p className="mt-2 text-xs font-semibold text-primary">
+                      {getCompletionPercent(day)}% complete
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {(day.meals || []).length === 0 ? (
+                    <p className="text-xs text-ink-mute dark:text-ink-mute-2">No meals stored for this day.</p>
+                  ) : (
+                    day.meals.map((meal) => (
+                      <div
+                        key={`${meal.mealPlanId}-${meal.mealType}-${meal.nameEn}`}
+                        className={`rounded-sm border p-4 transition-colors duration-200 ${
+                          meal.isCompleted
+                            ? 'border-primary/30 bg-primary/5'
+                            : 'border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className={`text-sm font-semibold tracking-tight ${meal.isCompleted ? 'text-primary' : 'text-ink dark:text-on-dark'}`}>
+                                {meal.nameEn || meal.nameAr}
+                              </p>
+                              {meal.isCompleted && (
+                                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                  Completed
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
+                              {meal.mealType} - {Math.round(meal.calories || 0)} kcal
+                            </p>
+                          </div>
+                          <CheckCircle2 className={`h-4 w-4 ${meal.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`} />
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <Button type="button" variant="secondary" size="sm" onClick={() => openMeal(meal)}>
+                            Details
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={meal.isCompleted ? 'secondary' : 'primary'}
+                            disabled={mealBusyId === meal.mealPlanId}
+                            onClick={() => toggleMeal(meal)}
+                          >
+                            {mealBusyId === meal.mealPlanId
+                              ? 'Saving...'
+                              : meal.isCompleted
+                                ? 'Mark incomplete'
+                                : 'Complete'}
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
-      {selectedMeal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <Card className="w-full max-w-xl border border-app">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm text-emerald-400">{selectedMeal.mealType || 'Meal details'}</p>
-                <h2 className="mt-1 text-2xl font-bold text-app">
-                  {selectedMeal.nameEn || selectedMeal.nameAr}
-                </h2>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedMeal(null)}>
-                Close
-              </Button>
-            </div>
-
-            {detailsLoading ? (
-              <div className="mt-6 flex items-center gap-2 text-app-muted">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading details...
-              </div>
-            ) : (
-              <div className="mt-6 space-y-5">
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <SummaryTile label="Calories" value={Math.round(selectedMeal.calories || 0)} />
-                  <SummaryTile label="Protein" value={`${selectedMeal.protein || 0}g`} />
-                  <SummaryTile label="Carbs" value={`${selectedMeal.carbs || 0}g`} />
-                  <SummaryTile label="Fat" value={`${selectedMeal.fat || 0}g`} />
+      <AnimatePresence>
+        {selectedMeal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className="w-full max-w-xl"
+            >
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-8 shadow-lg relative">
+                <div className="flex items-start justify-between gap-4 pb-4 border-b border-hairline dark:border-hairline-strong">
+                  <div>
+                    <p className="text-xs text-primary font-semibold uppercase tracking-wider">{selectedMeal.mealType || 'Meal details'}</p>
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-ink dark:text-on-dark">
+                      {selectedMeal.nameEn || selectedMeal.nameAr}
+                    </h2>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => setSelectedMeal(null)}>
+                    Close
+                  </Button>
                 </div>
-                {selectedMeal.ingredients && <InfoBlock label="Ingredients" value={selectedMeal.ingredients} />}
-                {selectedMeal.tags && <InfoBlock label="Tags" value={selectedMeal.tags} />}
-                {selectedMeal.prepTimeMinutes ? (
-                  <InfoBlock label="Prep time" value={`${selectedMeal.prepTimeMinutes} minutes`} />
-                ) : null}
-              </div>
-            )}
-          </Card>
-        </div>
-      )}
+
+                {detailsLoading ? (
+                  <div className="mt-8 flex items-center justify-center gap-2 text-ink-mute dark:text-ink-mute-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span>Loading details...</span>
+                  </div>
+                ) : (
+                  <div className="mt-6 space-y-6">
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                      <SummaryTile label="Calories" value={Math.round(selectedMeal.calories || 0)} />
+                      <SummaryTile label="Protein" value={`${selectedMeal.protein || 0}g`} />
+                      <SummaryTile label="Carbs" value={`${selectedMeal.carbs || 0}g`} />
+                      <SummaryTile label="Fat" value={`${selectedMeal.fat || 0}g`} />
+                    </div>
+                    {selectedMeal.ingredients && <InfoBlock label="Ingredients" value={selectedMeal.ingredients} />}
+                    {selectedMeal.tags && <InfoBlock label="Tags" value={selectedMeal.tags} />}
+                    {selectedMeal.prepTimeMinutes ? (
+                      <InfoBlock label="Prep time" value={`${selectedMeal.prepTimeMinutes} minutes`} />
+                    ) : null}
+                  </div>
+                )}
+              </Card>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 function SummaryTile({ label, value }) {
   return (
-    <div className="rounded-lg border border-app bg-app-surface p-3">
-      <p className="text-xs text-app-muted">{label}</p>
-      <p className="mt-1 font-semibold text-app">{value}</p>
+    <div className="rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft p-3">
+      <p className="text-[10px] text-ink-mute dark:text-ink-mute-2 font-semibold uppercase tracking-wider">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink dark:text-on-dark"><AnimatedNumber value={value} /></p>
     </div>
   );
 }
 
 function InfoBlock({ label, value }) {
   return (
-    <div>
-      <p className="text-sm font-semibold text-app">{label}</p>
-      <p className="mt-1 text-sm text-app-muted">{value}</p>
+    <div className="border-t border-hairline dark:border-hairline-strong pt-4">
+      <p className="text-xs font-semibold text-ink dark:text-on-dark uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-sm text-ink-mute dark:text-ink-mute-2 leading-relaxed">{value}</p>
     </div>
   );
 }
+

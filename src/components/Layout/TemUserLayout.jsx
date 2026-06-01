@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   CalendarDays,
@@ -29,15 +30,15 @@ export default function UserLayout() {
   const { isApiLoading } = useGlobalLoading();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '' },
-    { icon: CalendarDays, label: 'AI Planner', path: 'planner' },
-    { icon: Activity, label: 'Tracker', path: 'tracker' },
-    { icon: Dumbbell, label: 'Workouts', path: 'workouts' },
-    { icon: BarChart3, label: 'Analytics', path: 'analytics' },
-    { icon: MapPin, label: 'Restaurants', path: 'restaurants' },
-    { icon: Watch, label: 'Google Fit', path: 'device-sync' },
-    { icon: UserCircle, label: 'Complete Profile', path: 'complete-profile' },
-    { icon: Settings, label: 'Settings', path: 'settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/user' },
+    { icon: CalendarDays, label: 'AI Planner', path: '/user/planner' },
+    { icon: Activity, label: 'Tracker', path: '/user/tracker' },
+    { icon: Dumbbell, label: 'Workouts', path: '/user/workouts' },
+    { icon: BarChart3, label: 'Analytics', path: '/user/analytics' },
+    { icon: MapPin, label: 'Restaurants', path: '/user/restaurants' },
+    { icon: Watch, label: 'Google Fit', path: '/user/device-sync' },
+    { icon: UserCircle, label: 'Complete Profile', path: '/user/complete-profile' },
+    { icon: Settings, label: 'Settings', path: '/user/settings' },
   ];
 
   const handleLogout = async () => {
@@ -53,86 +54,104 @@ export default function UserLayout() {
       .toUpperCase();
 
   React.useEffect(() => {
-    if (!hasCompletedProfile && location.pathname !== '/user/complete-profile') {
+    if (!hasCompletedProfile) {
       navigate('/user/complete-profile', { replace: true });
     }
-  }, [hasCompletedProfile, location.pathname, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasCompletedProfile]);
 
   return (
-    <div className="min-h-screen flex bg-app text-app">
+    <div className="min-h-screen flex bg-canvas dark:bg-canvas-night text-ink dark:text-on-dark transition-colors duration-300">
+      {/* Sidebar spacer to hold layout on desktop */}
+      <div className="hidden lg:block lg:w-16 shrink-0 transition-all duration-300 ease-in-out" />
+
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-app-surface border-r border-app
-        transform transition-transform duration-200
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        className={`fixed inset-y-0 left-0 z-50 bg-canvas-soft dark:bg-canvas-night-soft border-r border-hairline dark:border-hairline-strong
+        transition-all duration-300 ease-in-out group/sidebar overflow-hidden
+        ${sidebarOpen
+            ? 'w-64 translate-x-0'
+            : '-translate-x-full lg:translate-x-0 lg:w-16 lg:hover:w-64 lg:hover:shadow-xl'
+          }`}
       >
-        <div className="h-full flex flex-col">
-          {/* Logo */}
-          <div className="p-6 border-b border-app">
-            <div className="flex items-center gap-2">
-              <Activity className="w-8 h-8 text-emerald-500" />
-              <span className="text-xl text-app">
-                VitalityAI
-              </span>
+        <div className="h-full flex flex-col justify-between">
+          <div className="flex flex-col flex-1 min-h-0">
+            {/* Logo */}
+            <div className="p-4 border-b border-hairline dark:border-hairline-strong h-[73px] flex items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-sm bg-ink dark:bg-on-dark flex items-center justify-center shadow-sm shrink-0">
+                  <Activity className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <span
+                  className={`text-lg font-bold tracking-tight text-ink dark:text-on-dark transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'
+                    }`}
+                >
+                  Vitality<span className="text-primary font-medium">AI</span>
+                </span>
+              </div>
             </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.path}
+                    onClick={() => {
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-4 px-3 py-2.5 rounded-sm text-sm transition-all duration-200 shrink-0
+                    ${isActive
+                        ? 'bg-primary/10 border-l-2 border-primary text-primary font-medium'
+                        : 'text-ink-mute dark:text-ink-mute-2 hover:bg-hairline-cool dark:hover:bg-canvas-night-soft hover:text-ink dark:hover:text-on-dark'
+                      }`}
+                  >
+                    <Icon className="w-4.5 h-4.5 shrink-0" />
+                    <span
+                      className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'
+                        }`}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 overflow-y-auto">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-
-              const isActive =
-                item.path === ''
-                  ? location.pathname === '/user'
-                  : location.pathname.includes(item.path);
-
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    navigate(item.path);
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors
-                  ${
-                    isActive
-                      ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
-                      : 'text-app-muted hover:bg-black/5 dark:hover:bg-white/10'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
           {/* Logout */}
-          <div className="p-4 border-t border-app">
+          <div className="p-3 border-t border-hairline dark:border-hairline-strong shrink-0">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
+              className="w-full flex items-center gap-4 px-3 py-2.5 rounded-sm text-sm text-accent-tomato hover:bg-accent-tomato/10 transition-colors shrink-0"
             >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
+              <LogOut className="w-4.5 h-4.5 shrink-0" />
+              <span
+                className={`transition-opacity duration-300 whitespace-nowrap ${sidebarOpen ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'
+                  }`}
+              >
+                Logout
+              </span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">       
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-canvas dark:bg-canvas-night">
         {/* Top Bar */}
-        <header className="bg-app-surface border-b border-app px-6 py-4">
+        <header className="bg-canvas dark:bg-canvas-night border-b border-hairline dark:border-hairline-strong px-6 py-4">
           <div className="flex items-center">
             {/* Left (menu button) */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"
+              className="lg:hidden p-2 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink dark:text-on-dark"
             >
-              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
             {/* Right */}
@@ -141,34 +160,34 @@ export default function UserLayout() {
 
               <button
                 onClick={() => setIsVigoOpen(true)}
-                className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-app-muted hover:text-emerald-500 transition-colors relative"
+                className="p-2.5 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink-mute dark:text-ink-mute-2 hover:text-primary transition-colors relative"
                 title="Open Vigo AI Coach"
               >
-                <Sparkles className="w-5 h-5 text-emerald-500" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />
+                <Sparkles className="w-4.5 h-4.5 text-primary" />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full" />
               </button>
 
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm text-app">
+                  <p className="text-xs font-semibold text-ink dark:text-on-dark leading-tight">
                     {user?.name}
                   </p>
-                  <p className="text-xs text-app-muted">
+                  <p className="text-[10px] text-ink-mute dark:text-ink-mute-2">
                     {user?.email}
                   </p>
                 </div>
 
-                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-ink font-semibold text-xs shadow-sm">
                   {getInitials(user?.name)}
                 </div>
               </div>
             </div>
           </div>
         </header>
-        {isApiLoading && <div className="h-1 w-full bg-emerald-500/80" />}
+        {isApiLoading && <div className="h-[2px] w-full bg-primary/80" />}
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto bg-app">
+        <main className="flex-1 p-6 overflow-y-auto bg-canvas-soft dark:bg-canvas-night-soft">
           <Outlet />
         </main>
       </div>
@@ -176,7 +195,7 @@ export default function UserLayout() {
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -191,9 +210,10 @@ export default function UserLayout() {
           className="vigo-float-btn animate-fade-in"
           title="Chat with Vigo AI Coach"
         >
-          <Sparkles size={24} />
+          <Sparkles size={22} className="text-ink" />
         </button>
       )}
     </div>
   );
 }
+

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Droplets, Plus, RefreshCw, Save, Scale, Utensils } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
@@ -6,6 +7,7 @@ import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusSt
 import { useToast } from '../../context/ToastContext';
 import { useTrackerData } from '../../hooks/useTrackerData';
 import { mealsAPI, statsAPI, waterAPI } from '../../services/api';
+import AnimatedNumber from '../../components/UI/AnimatedNumber';
 
 const initialStats = {
   currentWeight: '',
@@ -134,168 +136,214 @@ export default function Tracker() {
   if (error) return <ErrorState message={error.message} onRetry={reload} />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-hairline dark:border-hairline-strong pb-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Tracker</p>
-          <h1 className="mt-2 text-3xl font-bold text-app">Daily health tracking</h1>
-          <p className="mt-2 text-sm text-app-muted">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Tracker</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Daily health tracking</h1>
+          <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
             Update body metrics, hydration, and meal completion using the live VitalityAI backend.
           </p>
         </div>
-        <Button variant="outline" onClick={reload}>
-          <RefreshCw className="h-4 w-4" />
+        <Button variant="secondary" onClick={reload}>
+          <RefreshCw className="h-3.5 w-3.5" />
           Refresh
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-hairline dark:border-hairline-strong">
         {[
           ['stats', Scale, 'Daily metrics'],
-          ['water', Droplets, 'Water'],
-          ['meals', Utensils, 'Meals'],
-        ].map(([key, Icon, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActiveTab(key)}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold ${
-              activeTab === key
-                ? 'bg-emerald-500 text-white'
-                : 'border border-app text-app-muted hover:border-emerald-400'
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </button>
-        ))}
+          ['water', Droplets, 'Water logs'],
+          ['meals', Utensils, 'Meals checklist'],
+        ].map(([key, Icon, label]) => {
+          const isActive = activeTab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key)}
+              className={`relative flex items-center gap-2 pb-4 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
+                isActive ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2 hover:text-ink dark:hover:text-on-dark'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+              {isActive && (
+                <motion.div
+                  layoutId="trackerActiveTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {activeTab === 'stats' && (
-        <Card className="border border-app">
-          {emptyStates.stats && (
-            <div className="mb-5">
-              <EmptyState
-                title="No health metrics recorded yet."
-                message="Start tracking your health data."
-                action={<Button onClick={() => document.getElementById('tracker-currentWeight')?.focus()}>Start tracking your health data</Button>}
-              />
-            </div>
-          )}
-
-          <form onSubmit={saveStats} className="space-y-5">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <NumberField id="tracker-currentWeight" label="Current weight (kg)" value={statsForm.currentWeight} onChange={(value) => updateStatsField('currentWeight', value)} />
-              <NumberField label="Waist (cm)" value={statsForm.waist} onChange={(value) => updateStatsField('waist', value)} />
-              <NumberField label="Chest (cm)" value={statsForm.chest} onChange={(value) => updateStatsField('chest', value)} />
-              <NumberField label="BMI" value={statsForm.bmi} onChange={(value) => updateStatsField('bmi', value)} />
-              <NumberField label="Calories consumed" value={statsForm.caloriesConsumed} onChange={(value) => updateStatsField('caloriesConsumed', value)} />
-              <NumberField label="Water intake (L)" value={statsForm.waterIntake} onChange={(value) => updateStatsField('waterIntake', value)} />
-              <NumberField label="Steps" value={statsForm.steps} onChange={(value) => updateStatsField('steps', value)} />
-            </div>
-            <Button type="submit" disabled={savingStats}>
-              <Save className="h-4 w-4" />
-              {savingStats ? 'Saving...' : 'Save daily metrics'}
-            </Button>
-          </form>
-        </Card>
-      )}
-
-      {activeTab === 'water' && (
-        <div className="grid gap-6 lg:grid-cols-[0.7fr_1fr]">
-          <Card className="border border-app">
-            <p className="text-sm text-app-muted">Today</p>
-            <p className="mt-2 text-4xl font-bold text-app">
-              {Number(waterToday?.totalAmount || 0).toFixed(1)} L
-            </p>
-            <div className="mt-5 flex gap-3">
-              <input
-                type="number"
-                min="0.1"
-                max="10"
-                step="0.05"
-                value={waterAmount}
-                onChange={(event) => setWaterAmount(event.target.value)}
-                className="min-w-0 flex-1 rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
-              />
-              <Button onClick={logWater} disabled={loggingWater}>
-                <Plus className="h-4 w-4" />
-                {loggingWater ? 'Saving...' : 'Add'}
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="border border-app">
-            <h2 className="text-xl font-bold text-app">Water history</h2>
-            <div className="mt-4 space-y-3">
-              {waterHistory.length === 0 ? (
-                <EmptyState title="No water logs yet." message="Add your first hydration entry above." />
-              ) : (
-                waterHistory.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between rounded-lg bg-app-surface p-3">
-                    <span className="text-app">{entry.amount} L</span>
-                    <span className="text-sm text-app-muted">
-                      {entry.date ? new Date(entry.date).toLocaleString() : 'Logged'}
-                    </span>
+      {/* Tab Content */}
+      <div className="relative">
+        <AnimatePresence mode="wait">
+          {activeTab === 'stats' && (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+                {emptyStates.stats && (
+                  <div className="mb-6">
+                    <EmptyState
+                      title="No health metrics recorded yet."
+                      message="Start tracking your daily body metrics to visualize your wellness journey."
+                    />
                   </div>
-                ))
-              )}
-            </div>
-          </Card>
-        </div>
-      )}
+                )}
 
-      {activeTab === 'meals' && (
-        <Card className="border border-app">
-          <h2 className="text-xl font-bold text-app">Today&apos;s meal completion</h2>
-          <div className="mt-4 space-y-3">
-            {displayMeals.length === 0 ? (
-              <EmptyState title="No meals available." message="Generate a meal plan before tracking meals." />
-            ) : (
-              displayMeals.map((meal) => (
-                <div
-                  key={meal.mealPlanId || `${meal.mealType}-${meal.nameEn}`}
-                  className={`flex items-center justify-between gap-4 rounded-lg border p-4 ${
-                    meal.isCompleted
-                      ? 'border-emerald-500/60 bg-emerald-500/10'
-                      : 'border-app bg-app-surface'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-app">{meal.nameEn || meal.nameAr}</p>
-                      {meal.isCompleted && (
-                        <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-200">
-                          Completed
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-app-muted">
-                      {meal.mealType} - {Math.round(meal.calories || 0)} kcal
-                    </p>
+                <form onSubmit={saveStats} className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <NumberField id="tracker-currentWeight" label="Current weight (kg)" value={statsForm.currentWeight} onChange={(value) => updateStatsField('currentWeight', value)} />
+                    <NumberField label="Waist (cm)" value={statsForm.waist} onChange={(value) => updateStatsField('waist', value)} />
+                    <NumberField label="Chest (cm)" value={statsForm.chest} onChange={(value) => updateStatsField('chest', value)} />
+                    <NumberField label="BMI" value={statsForm.bmi} onChange={(value) => updateStatsField('bmi', value)} />
+                    <NumberField label="Calories consumed" value={statsForm.caloriesConsumed} onChange={(value) => updateStatsField('caloriesConsumed', value)} />
+                    <NumberField label="Water intake (L)" value={statsForm.waterIntake} onChange={(value) => updateStatsField('waterIntake', value)} />
+                    <NumberField label="Steps" value={statsForm.steps} onChange={(value) => updateStatsField('steps', value)} />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className={`h-5 w-5 ${meal.isCompleted ? 'text-emerald-300' : 'text-slate-500'}`} />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={meal.isCompleted ? 'outline' : 'primary'}
-                      disabled={mealBusyId === meal.mealPlanId}
-                      onClick={() => toggleMeal(meal)}
-                    >
-                      {mealBusyId === meal.mealPlanId
-                        ? 'Saving...'
-                        : meal.isCompleted
-                          ? 'Mark incomplete'
-                          : 'Complete meal'}
+                  <div className="pt-2">
+                    <Button type="submit" disabled={savingStats}>
+                      <Save className="h-4 w-4 mr-1" />
+                      {savingStats ? 'Saving...' : 'Save daily metrics'}
                     </Button>
                   </div>
+                </form>
+              </Card>
+            </motion.div>
+          )}
+
+          {activeTab === 'water' && (
+            <motion.div
+              key="water"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+              className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]"
+            >
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Today's Intake</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-ink dark:text-on-dark">
+                  <AnimatedNumber value={`${Number(waterToday?.totalAmount || 0).toFixed(1)} L`} />
+                </p>
+                <div className="mt-6 flex gap-3">
+                  <input
+                    type="number"
+                    min="0.1"
+                    max="10"
+                    step="0.05"
+                    value={waterAmount}
+                    onChange={(event) => setWaterAmount(event.target.value)}
+                    className="min-w-0 flex-1 rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-4 py-2.5 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                  />
+                  <Button onClick={logWater} disabled={loggingWater}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    {loggingWater ? 'Saving...' : 'Add'}
+                  </Button>
                 </div>
-              ))
-            )}
-          </div>
-        </Card>
-      )}
+              </Card>
+
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+                <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark">Water history</h2>
+                <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-0.5 mb-5">Your logged hydration intervals for today.</p>
+                <div className="space-y-3">
+                  {waterHistory.length === 0 ? (
+                    <EmptyState title="No water logs yet." message="Add your first hydration entry to start logs." />
+                  ) : (
+                    waterHistory.map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft p-4">
+                        <span className="text-sm font-semibold text-primary">{entry.amount} L</span>
+                        <span className="text-xs text-ink-mute dark:text-ink-mute-2">
+                          {entry.date ? new Date(entry.date).toLocaleTimeString() : 'Logged'}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {activeTab === 'meals' && (
+            <motion.div
+              key="meals"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+                <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark">Today&apos;s meal completion</h2>
+                <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-0.5 mb-6">Cross off meals as you consume them to sync daily calorie intake.</p>
+                <div className="space-y-3">
+                  {displayMeals.length === 0 ? (
+                    <EmptyState title="No meals available." message="Generate a meal plan in AI Planner before tracking." />
+                  ) : (
+                    <AnimatePresence>
+                      {displayMeals.map((meal) => (
+                        <motion.div
+                          key={meal.mealPlanId || `${meal.mealType}-${meal.nameEn}`}
+                          layout
+                          className={`flex items-center justify-between gap-4 rounded-sm border p-4 transition-colors duration-200 ${
+                            meal.isCompleted
+                              ? 'border-primary/30 bg-primary/5'
+                              : 'border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className={`text-sm font-semibold tracking-tight ${meal.isCompleted ? 'text-primary' : 'text-ink dark:text-on-dark'}`}>
+                                {meal.nameEn || meal.nameAr}
+                              </p>
+                              {meal.isCompleted && (
+                                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                  Completed
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-1">
+                              {meal.mealType} - {Math.round(meal.calories || 0)} kcal - {meal.protein || 0}g protein
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <CheckCircle2 className={`h-4 w-4 ${meal.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`} />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={meal.isCompleted ? 'secondary' : 'primary'}
+                              disabled={mealBusyId === meal.mealPlanId}
+                              onClick={() => toggleMeal(meal)}
+                            >
+                              {mealBusyId === meal.mealPlanId
+                                ? 'Saving...'
+                                : meal.isCompleted
+                                  ? 'Mark incomplete'
+                                  : 'Complete'}
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -303,7 +351,7 @@ export default function Tracker() {
 function NumberField({ id, label, value, onChange }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-app-muted">{label}</span>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">{label}</span>
       <input
         id={id}
         type="number"
@@ -311,7 +359,7 @@ function NumberField({ id, label, value, onChange }) {
         value={value}
         required
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border border-app bg-app-surface px-4 py-3 text-app"
+        className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-4 py-2.5 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
       />
     </label>
   );

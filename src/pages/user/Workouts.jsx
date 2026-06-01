@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Dumbbell, Loader2, Moon, RefreshCw, Sparkles } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
 import { useToast } from '../../context/ToastContext';
 import { useCurrentWorkout, useGenerateWorkoutPlan, useToggleWorkoutExercise } from '../../hooks/useWorkoutPlanner';
+import AnimatedNumber from '../../components/UI/AnimatedNumber';
 
 function pct(value, target) {
   if (!target) return 0;
@@ -36,6 +38,29 @@ function formatDate(dateStr) {
     return dateStr;
   }
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
 
 export default function Workouts() {
   const { showToast } = useToast();
@@ -93,25 +118,24 @@ export default function Workouts() {
   const hasWorkout = days.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-hairline dark:border-hairline-strong pb-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Workouts</p>
-          <h1 className="mt-2 text-3xl font-bold text-app">AI workout planner</h1>
-          <p className="mt-2 max-w-2xl text-sm text-app-muted">
-            Generate a personalized weekly plan from your saved profile and track exercise completion
-            day by day.
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Workouts</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">AI workout planner</h1>
+          <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2 max-w-2xl">
+            Generate a personalized weekly plan from your saved profile and track exercise completion day by day.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={refetch} disabled={isFetching || generateMutation.isPending}>
-            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={refetch} disabled={isFetching || generateMutation.isPending}>
+            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button onClick={handleGenerate} disabled={generateMutation.isPending}>
-            {generateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {generateMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
             {generateMutation.isPending ? 'Generating...' : 'Generate workout plan'}
           </Button>
         </div>
@@ -123,52 +147,64 @@ export default function Workouts() {
           message="Generate a workout plan after completing your profile to see your weekly exercises."
           action={
             <Button onClick={handleGenerate} disabled={generateMutation.isPending}>
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
               Generate workout plan
             </Button>
           }
         />
       ) : (
-        <>
+        <motion.div 
+          className="space-y-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Overall weekly progress */}
-          <Card className="border border-app">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-lg bg-emerald-500/10 p-2 text-emerald-400">
-                  <Dumbbell className="h-5 w-5" />
+          <motion.div variants={cardVariants}>
+            <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong p-2.5 text-primary">
+                    <Dumbbell className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Weekly progress</p>
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-ink dark:text-on-dark">
+                      <AnimatedNumber value={completedWorkouts} /> of <AnimatedNumber value={totalWorkouts} /> workout days completed
+                    </h2>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-app-muted">Weekly progress</p>
-                  <h2 className="mt-1 text-2xl font-bold text-app">
-                    {completedWorkouts} / {totalWorkouts} workout days completed
-                  </h2>
+                <div className="text-right">
+                  <span className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong px-2.5 py-1 text-xs text-ink dark:text-on-dark font-medium">
+                    <AnimatedNumber value={`${Math.round(overallProgress)}%`} /> complete
+                  </span>
                 </div>
               </div>
-              <span className="inline-flex items-center rounded-full bg-black/10 px-3 py-1 text-sm font-semibold text-app dark:bg-white/10">
-                {Math.round(overallProgress)}% complete
-              </span>
-            </div>
-            <div className="mt-5 h-3 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                style={{ width: `${overallProgress}%` }}
-              />
-            </div>
-          </Card>
+              <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-hairline dark:bg-hairline-strong">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${overallProgress}%` }}
+                  transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                  className="h-full rounded-full bg-primary"
+                />
+              </div>
+            </Card>
+          </motion.div>
 
           {/* Day cards */}
-          <div className="space-y-5">
+          <div className="space-y-6">
             {days.map((day, idx) => (
-              <DayCard
-                key={day.date || idx}
-                day={day}
-                busyId={busyId}
-                onToggle={toggleExercise}
-                highlight={isToday(day.date)}
-              />
+              <motion.div key={day.date || idx} variants={cardVariants}>
+                <DayCard
+                  day={day}
+                  busyId={busyId}
+                  onToggle={toggleExercise}
+                  highlight={isToday(day.date)}
+                />
+              </motion.div>
             ))}
           </div>
-        </>
+        </motion.div>
       )}
     </div>
   );
@@ -188,33 +224,39 @@ function DayCard({ day, busyId, onToggle, highlight }) {
 
   return (
     <Card
-      className={`border ${highlight ? 'border-emerald-500/60 ring-1 ring-emerald-500/30' : 'border-app'}`}
+      className={`border p-6 bg-canvas dark:bg-canvas-night transition-all duration-200 ${
+        highlight 
+          ? 'border-primary ring-1 ring-primary/20' 
+          : 'border-hairline dark:border-hairline-strong'
+      }`}
     >
       {/* Day header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-4 border-b border-hairline dark:border-hairline-strong mb-5">
+        <div className="flex items-start gap-4">
           <div
-            className={`rounded-lg p-2 ${
-              isRest ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
+            className={`rounded-sm p-2 border ${
+              isRest 
+                ? 'bg-accent-yellow/10 text-accent-yellow border-accent-yellow/20' 
+                : 'bg-canvas-soft dark:bg-canvas-night-soft text-primary border-hairline dark:border-hairline-strong'
             }`}
           >
             {isRest ? <Moon className="h-5 w-5" /> : <Dumbbell className="h-5 w-5" />}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-bold text-app">{day.day || day.date || 'Workout day'}</h3>
+              <h3 className="text-base font-bold tracking-tight text-ink dark:text-on-dark">{day.day || day.date || 'Workout day'}</h3>
               {highlight && (
-                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-200">
+                <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
                   Today
                 </span>
               )}
               {isRest && (
-                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-200">
+                <span className="rounded-full bg-accent-yellow/20 px-2 py-0.5 text-[10px] font-semibold text-accent-yellow">
                   Rest day
                 </span>
               )}
             </div>
-            <p className="text-sm text-app-muted">
+            <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-1">
               {formatDate(day.date)}
               {day.focus && !isRest ? ` · ${day.focus}` : ''}
             </p>
@@ -222,86 +264,93 @@ function DayCard({ day, busyId, onToggle, highlight }) {
         </div>
 
         {!isRest && total > 0 && (
-          <div className="text-right">
-            <span className="inline-flex items-center rounded-full bg-black/10 px-3 py-1 text-sm font-semibold text-app dark:bg-white/10">
-              {completed} / {total} completed
+          <div className="text-left sm:text-right">
+            <span className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong px-2.5 py-1 text-xs text-ink dark:text-on-dark font-medium">
+              {completed} / {total} exercises completed
             </span>
-            <p className="mt-1 text-sm font-medium text-emerald-500">{Math.round(completion)}%</p>
+            <p className="mt-2 text-xs font-semibold text-primary">{Math.round(completion)}% complete</p>
           </div>
         )}
       </div>
 
       {/* Progress bar (non-rest days only) */}
       {!isRest && total > 0 && (
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
-          <div
-            className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-            style={{ width: `${completion}%` }}
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-hairline dark:bg-hairline-strong">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${completion}%` }}
+            transition={{ type: "spring", stiffness: 80, damping: 15 }}
+            className="h-full rounded-full bg-primary"
           />
         </div>
       )}
 
       {/* Rest day message */}
       {isRest && (
-        <p className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-app-muted">
-          Recovery day — rest, stretch, and recharge for tomorrow's session.
-        </p>
+        <div className="rounded-sm border border-accent-yellow/20 bg-accent-yellow/5 p-4">
+          <p className="text-xs text-ink-mute dark:text-ink-mute-2 leading-relaxed">
+            Recovery day — rest, stretch, and recharge for tomorrow's session.
+          </p>
+        </div>
       )}
 
       {/* Exercises */}
       {!isRest && sorted.length > 0 && (
-        <div className="mt-5 grid gap-3 lg:grid-cols-2">
-          {sorted.map((exercise) => (
-            <div
-              key={exercise.id || exercise.workoutPlanId || exercise.exerciseId}
-              className={`rounded-lg border p-4 transition ${
-                exercise.isCompleted
-                  ? 'border-emerald-500/60 bg-emerald-500/10'
-                  : 'border-app bg-app-surface'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate font-semibold text-app">{exercise.exerciseName}</p>
-                    {exercise.isCompleted && (
-                      <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-200">
-                        Done
-                      </span>
-                    )}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AnimatePresence>
+            {sorted.map((exercise) => (
+              <motion.div
+                key={exercise.id || exercise.workoutPlanId || exercise.exerciseId}
+                layout
+                className={`rounded-sm border p-4 transition-colors duration-200 ${
+                  exercise.isCompleted
+                    ? 'border-primary/30 bg-primary/5'
+                    : 'border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-semibold tracking-tight ${exercise.isCompleted ? 'text-primary' : 'text-ink dark:text-on-dark'}`}>{exercise.exerciseName}</p>
+                      {exercise.isCompleted && (
+                        <span className="shrink-0 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          Completed
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-1">
+                      {exercise.sets} sets · {exercise.reps} reps
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-app-muted">
-                    {exercise.sets} sets · {exercise.reps} reps
-                  </p>
+                  <CheckCircle2
+                    className={`h-4 w-4 shrink-0 mt-0.5 ${exercise.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`}
+                  />
                 </div>
-                <CheckCircle2
-                  className={`h-5 w-5 shrink-0 ${exercise.isCompleted ? 'text-emerald-400' : 'text-app-muted'}`}
-                />
-              </div>
 
-              {exercise.formTip && (
-                <p className="mt-3 rounded-md border border-app bg-app-surface p-2.5 text-xs text-app-muted">
-                  💡 {exercise.formTip}
-                </p>
-              )}
+                {exercise.formTip && (
+                  <div className="mt-3 rounded-sm border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-3 text-xs text-ink-mute dark:text-ink-mute-2">
+                    <span className="font-semibold text-ink dark:text-on-dark">Tip:</span> {exercise.formTip}
+                  </div>
+                )}
 
-              <div className="mt-3">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={exercise.isCompleted ? 'outline' : 'primary'}
-                  disabled={busyId === (exercise.id || exercise.workoutPlanId)}
-                  onClick={() => onToggle(exercise)}
-                >
-                  {busyId === (exercise.id || exercise.workoutPlanId)
-                    ? 'Saving...'
-                    : exercise.isCompleted
-                      ? 'Mark incomplete'
-                      : 'Complete exercise'}
-                </Button>
-              </div>
-            </div>
-          ))}
+                <div className="mt-4">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={exercise.isCompleted ? 'secondary' : 'primary'}
+                    disabled={busyId === (exercise.id || exercise.workoutPlanId)}
+                    onClick={() => onToggle(exercise)}
+                  >
+                    {busyId === (exercise.id || exercise.workoutPlanId)
+                      ? 'Saving...'
+                      : exercise.isCompleted
+                        ? 'Mark incomplete'
+                        : 'Complete'}
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </Card>

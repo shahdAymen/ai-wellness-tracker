@@ -1,10 +1,34 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Calendar, Link, LogOut, Ruler, Scale, Shield, User, UserRound } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { authAPI, lookupAPI, userAPI } from '../../services/api';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
 
 export default function Settings() {
   const { user, logout, refreshMe } = useAuth();
@@ -118,170 +142,179 @@ export default function Settings() {
   const maxBirthDateStr = maxBirthDate.toISOString().slice(0, 10);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Settings</p>
-        <h1 className="mt-2 text-3xl font-bold text-app">Account and integrations</h1>
-        <p className="mt-2 text-sm text-app-muted">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="border-b border-hairline dark:border-hairline-strong pb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Settings</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Account and integrations</h1>
+        <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
           Manage your personal profile and account sessions.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border border-app">
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <User className="h-6 w-6 text-emerald-400" />
-              <h2 className="text-xl font-bold text-app">Profile</h2>
+      <motion.div
+        className="grid gap-6 lg:grid-cols-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants}>
+          <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+            <div className="mb-6 flex items-center justify-between pb-4 border-b border-hairline dark:border-hairline-strong">
+              <div className="flex items-center gap-2.5">
+                <User className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark">Profile Details</h2>
+              </div>
+              {!isEditing && (
+                <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
+                  Edit Profile
+                </Button>
+              )}
             </div>
-            {!isEditing && (
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                Edit Profile
-              </Button>
+
+            {!isEditing ? (
+              <div className="space-y-3">
+                <InfoRow label="Name" value={user?.fullName || user?.name || 'Not set'} />
+                <InfoRow label="Email" value={user?.email || 'Not set'} />
+                <InfoRow label="Gender" value={user?.gender || 'Not set'} />
+                <InfoRow label="Birth date" value={user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : 'Not set'} />
+                <InfoRow label="Height" value={user?.height ? `${user.height} cm` : 'Not set'} />
+                <InfoRow label="Weight" value={user?.weight ? `${user.weight} kg` : 'Not set'} />
+                <InfoRow label="Activity level" value={user?.activityLevel || 'Not set'} />
+                <InfoRow label="Goal" value={user?.goal || 'Not set'} />
+              </div>
+            ) : (
+              <form onSubmit={handleSave} className="space-y-4">
+                <Field label="Full Name" error={errors.fullName} icon={UserRound}>
+                  <input
+                    type="text"
+                    value={form.fullName}
+                    onChange={(e) => updateField('fullName', e.target.value)}
+                    className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                  />
+                </Field>
+
+                <Field label="Gender" error={errors.gender} icon={UserRound}>
+                  <select
+                    value={form.gender}
+                    onChange={(e) => updateField('gender', e.target.value)}
+                    className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </Field>
+
+                <Field label="Birth date" error={errors.birthDate} icon={Calendar}>
+                  <input
+                    type="date"
+                    max={maxBirthDateStr}
+                    value={form.birthDate}
+                    onChange={(e) => updateField('birthDate', e.target.value)}
+                    className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Height (cm)" error={errors.height} icon={Ruler}>
+                    <input
+                      type="number"
+                      min="100"
+                      max="250"
+                      value={form.height}
+                      onChange={(e) => updateField('height', e.target.value)}
+                      className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                    />
+                  </Field>
+
+                  <Field label="Weight (kg)" error={errors.weight} icon={Scale}>
+                    <input
+                      type="number"
+                      min="30"
+                      max="300"
+                      step="0.1"
+                      value={form.weight}
+                      onChange={(e) => updateField('weight', e.target.value)}
+                      className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Activity level" error={errors.activityLevelId} icon={Activity}>
+                  <select
+                    value={form.activityLevelId}
+                    onChange={(e) => updateField('activityLevelId', e.target.value)}
+                    className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                  >
+                    <option value="">Select activity level</option>
+                    {activityLevels.map((level) => (
+                      <option key={level.id} value={level.id}>
+                        {level.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Goal" error={errors.goalId} icon={Activity}>
+                  <select
+                    value={form.goalId}
+                    onChange={(e) => updateField('goalId', e.target.value)}
+                    className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+                  >
+                    <option value="">Select goal</option>
+                    {goals.map((goal) => (
+                      <option key={goal.id} value={goal.id}>
+                        {goal.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <div className="mt-6 flex justify-end gap-3 pt-2">
+                  <Button type="button" variant="secondary" onClick={() => setIsEditing(false)} disabled={saving}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Profile'}
+                  </Button>
+                </div>
+              </form>
             )}
-          </div>
+          </Card>
+        </motion.div>
 
-          {!isEditing ? (
-            <div className="space-y-3">
-              <InfoRow label="Name" value={user?.fullName || user?.name || 'Not set'} />
-              <InfoRow label="Email" value={user?.email || 'Not set'} />
-              <InfoRow label="Gender" value={user?.gender || 'Not set'} />
-              <InfoRow label="Birth date" value={user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : 'Not set'} />
-              <InfoRow label="Height" value={user?.height ? `${user.height} cm` : 'Not set'} />
-              <InfoRow label="Weight" value={user?.weight ? `${user.weight} kg` : 'Not set'} />
-              <InfoRow label="Activity level" value={user?.activityLevel || 'Not set'} />
-              <InfoRow label="Goal" value={user?.goal || 'Not set'} />
+        <motion.div variants={itemVariants} className="space-y-6">
+          <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+            <div className="mb-6 flex items-center gap-2.5 pb-4 border-b border-hairline dark:border-hairline-strong">
+              <Shield className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark">Active Session</h2>
             </div>
-          ) : (
-            <form onSubmit={handleSave} className="space-y-4">
-              <Field label="Full Name" error={errors.fullName} icon={UserRound}>
-                <input
-                  type="text"
-                  value={form.fullName}
-                  onChange={(e) => updateField('fullName', e.target.value)}
-                  className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                />
-              </Field>
-
-              <Field label="Gender" error={errors.gender} icon={UserRound}>
-                <select
-                  value={form.gender}
-                  onChange={(e) => updateField('gender', e.target.value)}
-                  className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                >
-                  <option value="">Select gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </Field>
-
-              <Field label="Birth date" error={errors.birthDate} icon={Calendar}>
-                <input
-                  type="date"
-                  max={maxBirthDateStr}
-                  value={form.birthDate}
-                  onChange={(e) => updateField('birthDate', e.target.value)}
-                  className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                />
-              </Field>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Height (cm)" error={errors.height} icon={Ruler}>
-                  <input
-                    type="number"
-                    min="100"
-                    max="250"
-                    value={form.height}
-                    onChange={(e) => updateField('height', e.target.value)}
-                    className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                  />
-                </Field>
-
-                <Field label="Weight (kg)" error={errors.weight} icon={Scale}>
-                  <input
-                    type="number"
-                    min="30"
-                    max="300"
-                    step="0.1"
-                    value={form.weight}
-                    onChange={(e) => updateField('weight', e.target.value)}
-                    className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                  />
-                </Field>
-              </div>
-
-              <Field label="Activity level" error={errors.activityLevelId} icon={Activity}>
-                <select
-                  value={form.activityLevelId}
-                  onChange={(e) => updateField('activityLevelId', e.target.value)}
-                  className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                >
-                  <option value="">Select activity level</option>
-                  {activityLevels.map((level) => (
-                    <option key={level.id} value={level.id}>
-                      {level.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field label="Goal" error={errors.goalId} icon={Activity}>
-                <select
-                  value={form.goalId}
-                  onChange={(e) => updateField('goalId', e.target.value)}
-                  className="w-full rounded-lg border border-app bg-app-surface px-4 py-2 text-app"
-                >
-                  <option value="">Select goal</option>
-                  {goals.map((goal) => (
-                    <option key={goal.id} value={goal.id}>
-                      {goal.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <div className="mt-5 flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={saving}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Profile'}
-                </Button>
-              </div>
-            </form>
-          )}
-        </Card>
-
-        <Card className="border border-app h-fit">
-          <div className="mb-5 flex items-center gap-3">
-            <Shield className="h-6 w-6 text-emerald-400" />
-            <h2 className="text-xl font-bold text-app">Session</h2>
-          </div>
-          <p className="text-sm text-app-muted">
-            Logout revokes the refresh token using the documented auth endpoint, then clears local
-            session state.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Button onClick={() => (window.location.href = authAPI.getGoogleLoginUrl())}>
-              <Link className="h-4 w-4" />
-              Connect Google
-            </Button>
-            <Button variant="danger" onClick={logout}>
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-        </Card>
-      </div>
+            <p className="text-xs text-ink-mute dark:text-ink-mute-2 leading-relaxed">
+              Logout revokes your current session keys, terminates the server-side authentication state, and clears your local storage.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <Button variant="secondary" onClick={() => (window.location.href = authAPI.getGoogleLoginUrl())}>
+                <Link className="h-3.5 w-3.5 mr-1" />
+                Connect Google Account
+              </Button>
+              <Button variant="danger" onClick={logout}>
+                <LogOut className="h-3.5 w-3.5 mr-1" />
+                Logout
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
 
 function InfoRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between border-b border-app pb-3">
-      <span className="text-sm text-app-muted">{label}</span>
-      <span className="text-right text-sm font-semibold text-app">{value}</span>
+    <div className="flex items-center justify-between border-b border-hairline dark:border-hairline-strong pb-3 last:border-0 last:pb-0">
+      <span className="text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">{label}</span>
+      <span className="text-sm font-semibold text-ink dark:text-on-dark">{value}</span>
     </div>
   );
 }
@@ -289,12 +322,12 @@ function InfoRow({ label, value }) {
 function Field({ label, error, icon: Icon, children }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-sm font-medium text-app">
-        <Icon className="h-4 w-4 text-emerald-400" />
+      <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">
+        <Icon className="h-3.5 w-3.5 text-primary" />
         {label}
       </span>
       {children}
-      {error && <span className="mt-1 block text-sm text-rose-400">{error}</span>}
+      {error && <span className="mt-1 block text-xs text-rose-500">{error}</span>}
     </label>
   );
 }

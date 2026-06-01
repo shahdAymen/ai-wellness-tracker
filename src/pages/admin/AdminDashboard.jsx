@@ -1,8 +1,33 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Store, UtensilsCrossed, Users } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 import { ErrorState, PageLoader } from '../../components/UI/StatusStates';
 import { dashboardAPI, mealsAPI, restaurantAPI, userAPI } from '../../services/api';
+import AnimatedNumber from '../../components/UI/AnimatedNumber';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
 
 export default function AdminDashboard() {
   const [data, setData] = useState({
@@ -51,56 +76,81 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">System Overview</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Live admin counters from documented dashboard, user, meal, and restaurant endpoints.
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="border-b border-hairline dark:border-hairline-strong pb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Admin</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">System Overview</h1>
+        <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
+          Live admin counters from dashboard, user, meal, and restaurant endpoints.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      {/* Counters Grid */}
+      <motion.div
+        className="grid gap-6 md:grid-cols-3"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <Card key={card.label}>
-              <Icon className="h-8 w-8 text-emerald-500" />
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">{card.label}</p>
-              <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
-                {Number(card.value || 0).toLocaleString()}
-              </p>
-            </Card>
+            <motion.div key={card.label} variants={itemVariants}>
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">{card.label}</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark font-mono">
+                      <AnimatedNumber value={card.value} />
+                    </p>
+                  </div>
+                  <div className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong p-2.5 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
+      {/* Details Sections */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Recent users</h2>
+        <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+          <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark pb-4 border-b border-hairline dark:border-hairline-strong mb-5">Recent users</h2>
           <div className="space-y-3">
             {data.users.slice(0, 5).map((user) => (
-              <div key={user.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-slate-700">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{user.fullName || user.email}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+              <div key={user.id} className="flex items-center justify-between rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft p-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold tracking-tight text-ink dark:text-on-dark truncate">{user.fullName || user.email}</p>
+                  <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-0.5 truncate">{user.email}</p>
                 </div>
-                <span className="text-sm text-gray-500 dark:text-gray-300">{user.role}</span>
+                <span className="rounded-sm bg-canvas dark:bg-canvas-night border border-hairline dark:border-hairline-strong px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2 shrink-0">
+                  {user.role}
+                </span>
               </div>
             ))}
+            {data.users.length === 0 && (
+              <p className="text-xs text-ink-mute dark:text-ink-mute-2">No users recorded in the database.</p>
+            )}
           </div>
         </Card>
 
-        <Card>
-          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Restaurant inventory</h2>
+        <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+          <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark pb-4 border-b border-hairline dark:border-hairline-strong mb-5">Restaurant inventory</h2>
           <div className="space-y-3">
             {data.restaurants.slice(0, 5).map((restaurant) => (
-              <div key={restaurant.id} className="rounded-lg bg-gray-50 p-3 dark:bg-slate-700">
-                <p className="font-semibold text-gray-900 dark:text-white">{restaurant.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div key={restaurant.id} className="rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft p-4">
+                <p className="text-sm font-semibold tracking-tight text-ink dark:text-on-dark">{restaurant.name}</p>
+                <p className="text-xs text-ink-mute dark:text-ink-mute-2 mt-1">
                   {restaurant.category || 'Restaurant'} · {restaurant.city || restaurant.area || 'Location not set'}
                 </p>
               </div>
             ))}
+            {data.restaurants.length === 0 && (
+              <p className="text-xs text-ink-mute dark:text-ink-mute-2">No restaurants registered in the database.</p>
+            )}
           </div>
         </Card>
       </div>

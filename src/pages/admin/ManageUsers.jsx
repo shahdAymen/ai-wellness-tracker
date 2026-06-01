@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Search, ShieldCheck, UserX } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
@@ -69,75 +70,89 @@ export default function ManageUsers() {
   if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Uses documented admin user endpoints for listing, role changes, and delete/block toggles.
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="border-b border-hairline dark:border-hairline-strong pb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Admin</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Manage Users</h1>
+        <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
+          Uses admin user endpoints for listing, role changes, and delete/block toggles.
         </p>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search users by name, email, or role"
-          className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-        />
-      </div>
-
-      <Card className="overflow-hidden p-0">
-        {filtered.length === 0 ? (
-          <EmptyState title="No users found" />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px]">
-              <thead className="bg-gray-50 dark:bg-slate-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-300">User</th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-300">Email</th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-300">Role</th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-gray-500 dark:text-gray-300">Status</th>
-                  <th className="px-6 py-3 text-right text-xs uppercase text-gray-500 dark:text-gray-300">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                {filtered.map((user) => (
-                  <tr key={user.id}>
-                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                      {user.fullName || 'Unnamed user'}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{user.email}</td>
-                    <td className="px-6 py-4 text-gray-900 dark:text-white">{user.role}</td>
-                    <td className="px-6 py-4">
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        user.isDeleted
-                          ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                      }`}>
-                        {user.isDeleted ? 'Blocked' : 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => changeRole(user)} disabled={busyId === user.id}>
-                          <ShieldCheck className="h-4 w-4" />
-                          Toggle role
-                        </Button>
-                        <Button size="sm" variant="danger" onClick={() => toggleDeleted(user)} disabled={busyId === user.id}>
-                          <UserX className="h-4 w-4" />
-                          {user.isDeleted ? 'Restore' : 'Block'}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Search Bar */}
+      <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-4">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-mute dark:text-ink-mute-2" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search users by name, email, or role..."
+            className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft py-2.5 pl-11 pr-4 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+          />
+        </div>
       </Card>
+
+      {/* Users Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+      >
+        <Card className="overflow-hidden border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-0">
+          {filtered.length === 0 ? (
+            <div className="p-6">
+              <EmptyState title="No users found" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left border-collapse">
+                <thead>
+                  <tr className="bg-canvas-soft dark:bg-canvas-night-soft border-b border-hairline dark:border-hairline-strong">
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">User</th>
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Email</th>
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Role</th>
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Status</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-hairline dark:divide-hairline-strong">
+                  {filtered.map((user) => (
+                    <tr key={user.id} className="hover:bg-canvas-soft/50 dark:hover:bg-canvas-night-soft/30 transition-colors duration-150">
+                      <td className="px-6 py-4 text-sm font-semibold tracking-tight text-ink dark:text-on-dark">
+                        {user.fullName || 'Unnamed user'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-ink-mute dark:text-ink-mute-2">{user.email}</td>
+                      <td className="px-6 py-4 text-sm font-mono text-ink dark:text-on-dark">{user.role}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center rounded-sm border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                          user.isDeleted
+                            ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                            : 'bg-primary/10 text-primary border-primary/20'
+                        }`}>
+                          {user.isDeleted ? 'Blocked' : 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="secondary" onClick={() => changeRole(user)} disabled={busyId === user.id}>
+                            <ShieldCheck className="h-3.5 w-3.5 mr-1" />
+                            Toggle role
+                          </Button>
+                          <Button size="sm" variant="danger" onClick={() => toggleDeleted(user)} disabled={busyId === user.id}>
+                            <UserX className="h-3.5 w-3.5 mr-1" />
+                            {user.isDeleted ? 'Restore' : 'Block'}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      </motion.div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Edit, Plus, Save } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
@@ -15,6 +16,29 @@ const emptyMeal = {
   protein: '',
   carbs: '',
   fats: '',
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
 };
 
 export default function ManageRecipes() {
@@ -59,6 +83,8 @@ export default function ManageRecipes() {
       carbs: meal.carbs || '',
       fats: meal.fats ?? meal.fat ?? '',
     });
+    // Scroll to form smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const saveMeal = async (event) => {
@@ -94,41 +120,60 @@ export default function ManageRecipes() {
   if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Meals</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Create and update meal records with the documented admin meal contract.
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="border-b border-hairline dark:border-hairline-strong pb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Admin</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Manage Meals</h1>
+        <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
+          Create and update meal records with the admin meal contract.
         </p>
       </div>
 
-      <Card>
-        <form onSubmit={saveMeal} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {/* Form Panel */}
+      <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+        <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark pb-4 border-b border-hairline dark:border-hairline-strong mb-5">
+          {editingId ? 'Edit Meal Recipe' : 'Add New Meal Recipe'}
+        </h2>
+        <form onSubmit={saveMeal} className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <TextField label="External ID" value={form.externalId} onChange={(value) => updateForm('externalId', value)} />
             <TextField label="Meal name" value={form.mealName} onChange={(value) => updateForm('mealName', value)} required />
-            <TextField label="Meal type" value={form.mealType} onChange={(value) => updateForm('mealType', value)} required />
+            <label className="block">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Meal type</span>
+              <select
+                value={form.mealType}
+                onChange={(event) => updateForm('mealType', event.target.value)}
+                required
+                className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-3 py-2 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
+              >
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Snack">Snack</option>
+              </select>
+            </label>
             <TextField label="Calories" type="number" value={form.calories} onChange={(value) => updateForm('calories', value)} required />
             <TextField label="Protein" type="number" value={form.protein} onChange={(value) => updateForm('protein', value)} required />
             <TextField label="Carbs" type="number" value={form.carbs} onChange={(value) => updateForm('carbs', value)} required />
             <TextField label="Fats" type="number" value={form.fats} onChange={(value) => updateForm('fats', value)} required />
           </div>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Description</span>
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">Description / Preparation</span>
             <textarea
               value={form.description}
               onChange={(event) => updateForm('description', event.target.value)}
               required
-              className="min-h-24 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+              className="min-h-24 w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-4 py-3 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
             />
           </label>
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={saving}>
-              {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {editingId ? <Save className="h-3.5 w-3.5 mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
               {saving ? 'Saving...' : editingId ? 'Update meal' : 'Add meal'}
             </Button>
             {editingId && (
-              <Button type="button" variant="outline" onClick={() => { setEditingId(null); setForm(emptyMeal); }}>
+              <Button type="button" variant="secondary" onClick={() => { setEditingId(null); setForm(emptyMeal); }}>
                 Cancel
               </Button>
             )}
@@ -136,33 +181,46 @@ export default function ManageRecipes() {
         </form>
       </Card>
 
+      {/* Meals List */}
       {meals.length === 0 ? (
         <EmptyState title="No meals found" />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <motion.div
+          className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {meals.map((meal) => (
-            <Card key={meal.id}>
-              <div className="flex items-start justify-between gap-4">
+            <motion.div key={meal.id} variants={itemVariants}>
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6 h-full flex flex-col justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {meal.mealName || meal.nameEn}
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {meal.description || meal.mealType || 'Meal'}
+                  <div className="flex items-start justify-between gap-4 pb-4 border-b border-hairline dark:border-hairline-strong mb-4">
+                    <div>
+                      <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark">
+                        {meal.mealName || meal.nameEn}
+                      </h2>
+                      <span className="inline-block mt-1.5 rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">
+                        {meal.mealType || 'Meal'}
+                      </span>
+                    </div>
+                    <Button size="sm" variant="secondary" onClick={() => editMeal(meal)}>
+                      <Edit className="h-3.5 w-3.5 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                  <p className="text-xs text-ink-mute dark:text-ink-mute-2 leading-relaxed mb-6">
+                    {meal.description || 'No description provided.'}
                   </p>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => editMeal(meal)}>
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <Info label="Calories" value={`${meal.calories || 0} kcal`} />
-                <Info label="Protein" value={`${meal.protein || 0}g`} />
-              </div>
-            </Card>
+                <div className="grid grid-cols-2 gap-4">
+                  <Info label="Calories" value={`${meal.calories || 0} kcal`} />
+                  <Info label="Protein" value={`${meal.protein || 0}g`} />
+                </div>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -171,13 +229,13 @@ export default function ManageRecipes() {
 function TextField({ label, value, onChange, type = 'text', required = false }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">{label}</span>
       <input
         type={type}
         value={value}
         required={required}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+        className="w-full rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft px-4 py-2.5 text-sm text-ink dark:text-on-dark focus:border-primary focus:outline-none transition-colors duration-200"
       />
     </label>
   );
@@ -185,9 +243,9 @@ function TextField({ label, value, onChange, type = 'text', required = false }) 
 
 function Info({ label, value }) {
   return (
-    <div className="rounded-lg bg-gray-50 p-3 dark:bg-slate-700">
-      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="font-semibold text-gray-900 dark:text-white">{value}</p>
+    <div className="rounded-sm border border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft p-3">
+      <p className="text-[10px] text-ink-mute dark:text-ink-mute-2 font-semibold uppercase tracking-wider">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink dark:text-on-dark">{value}</p>
     </div>
   );
 }

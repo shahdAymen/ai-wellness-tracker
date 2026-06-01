@@ -1,9 +1,34 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Activity, Flame, HeartPulse, Link, Moon, RefreshCw, Route, Timer } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
 import { authAPI, googleFitAPI, isFatalApiError, isIntegrationError } from '../../services/api';
+import AnimatedNumber from '../../components/UI/AnimatedNumber';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
 
 export default function DeviceSync() {
   const [summary, setSummary] = useState(null);
@@ -44,22 +69,23 @@ export default function DeviceSync() {
   if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-hairline dark:border-hairline-strong pb-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Google Fit</p>
-          <h1 className="mt-2 text-3xl font-bold text-app">Connected activity summary</h1>
-          <p className="mt-2 text-sm text-app-muted">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Google Fit</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Connected activity summary</h1>
+          <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
             Google Fit data is optional. When it is not connected, this page stays friendly and actionable.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" onClick={load}>
-            <RefreshCw className="h-4 w-4" />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={load}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1" />
             Refresh
           </Button>
           <Button onClick={connectGoogle}>
-            <Link className="h-4 w-4" />
+            <Link className="h-3.5 w-3.5 mr-1" />
             Connect Google
           </Button>
         </div>
@@ -71,20 +97,37 @@ export default function DeviceSync() {
           message="Connect Google Fit to sync steps, calories burned, distance, heart rate, activity minutes, and sleep."
           action={
             <Button onClick={connectGoogle}>
-              <Link className="h-4 w-4" />
+              <Link className="h-3.5 w-3.5 mr-1" />
               Connect Google Fit
             </Button>
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Metric icon={Activity} label="Steps" value={summary.steps} />
-          <Metric icon={Flame} label="Calories burned" value={summary.caloriesBurned} suffix="kcal" />
-          <Metric icon={Route} label="Distance" value={summary.distanceKm} suffix="km" />
-          <Metric icon={Timer} label="Activity minutes" value={summary.activityMinutes} suffix="min" />
-          <Metric icon={HeartPulse} label="Average heart rate" value={summary.averageHeartRate} suffix="bpm" />
-          <Metric icon={Moon} label="Sleep" value={summary.sleepHours} suffix="h" />
-        </div>
+        <motion.div
+          className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants}>
+            <Metric icon={Activity} label="Steps" value={summary.steps} />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Metric icon={Flame} label="Calories burned" value={summary.caloriesBurned} suffix="kcal" />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Metric icon={Route} label="Distance" value={summary.distanceKm} suffix="km" />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Metric icon={Timer} label="Activity minutes" value={summary.activityMinutes} suffix="min" />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Metric icon={HeartPulse} label="Average heart rate" value={summary.averageHeartRate} suffix="bpm" />
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Metric icon={Moon} label="Sleep" value={summary.sleepHours} suffix="h" />
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
@@ -92,12 +135,18 @@ export default function DeviceSync() {
 
 function Metric({ icon: Icon, label, value, suffix = '' }) {
   return (
-    <Card className="border border-app">
-      <Icon className="h-7 w-7 text-emerald-400" />
-      <p className="mt-4 text-sm text-app-muted">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-app">
-        {Number(value || 0).toLocaleString()} {suffix}
-      </p>
+    <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-mute dark:text-ink-mute-2">{label}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">
+            <AnimatedNumber value={value} /> <span className="text-xs font-normal text-ink-mute dark:text-ink-mute-2">{suffix}</span>
+          </p>
+        </div>
+        <div className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong p-2 text-primary">
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
     </Card>
   );
 }

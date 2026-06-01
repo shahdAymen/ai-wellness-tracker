@@ -129,11 +129,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const roles = normalizeRoles(user?.roles);
-  const isAdmin = roles.some((role) => role?.toLowerCase?.() === 'admin');
-
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    const roles = normalizeRoles(user?.roles);
+    const isAdmin = roles.some((role) => role?.toLowerCase?.() === 'admin');
+    return {
       user,
       roles,
       loading,
@@ -144,9 +143,8 @@ export function AuthProvider({ children }) {
       register,
       logout,
       refreshMe,
-    }),
-    [user, roles, loading, isAdmin, login, register, logout, refreshMe]
-  );
+    };
+  }, [user, loading, login, register, logout, refreshMe]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

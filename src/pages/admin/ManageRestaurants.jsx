@@ -1,9 +1,33 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Globe, MapPin, Phone, RefreshCw } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
 import { restaurantAPI } from '../../services/api';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
 
 export default function ManageRestaurants() {
   const [restaurants, setRestaurants] = useState([]);
@@ -31,67 +55,88 @@ export default function ManageRestaurants() {
   if (error) return <ErrorState message={error.message} onRetry={load} />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-hairline dark:border-hairline-strong pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Restaurants</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Admin</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-ink dark:text-on-dark">Manage Restaurants</h1>
+          <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
             Read-only admin restaurant management. No create, update, or delete restaurant endpoints are documented.
           </p>
         </div>
-        <Button variant="outline" onClick={load}>
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={load}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {restaurants.length === 0 ? (
         <EmptyState title="No restaurants found" />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <motion.div
+          className="grid gap-6 lg:grid-cols-2"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {restaurants.map((restaurant) => (
-            <Card key={restaurant.id}>
-              <div className="flex items-start justify-between gap-4">
+            <motion.div key={restaurant.id} variants={itemVariants}>
+              <Card className="border border-hairline dark:border-hairline-strong bg-canvas dark:bg-canvas-night p-6 h-full flex flex-col justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{restaurant.name}</h2>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {restaurant.category || 'Restaurant'} · {restaurant.cuisine_type || 'Cuisine'}
-                  </p>
-                </div>
-                {restaurant.distance_km != null && (
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                    {Number(restaurant.distance_km).toFixed(1)} km
-                  </span>
-                )}
-              </div>
+                  <div className="flex items-start justify-between gap-4 pb-4 border-b border-hairline dark:border-hairline-strong mb-4">
+                    <div>
+                      <h2 className="text-base font-semibold tracking-tight text-ink dark:text-on-dark">{restaurant.name}</h2>
+                      <p className="mt-1 text-xs text-ink-mute dark:text-ink-mute-2">
+                        {restaurant.category || 'Restaurant'} · {restaurant.cuisine_type || 'Cuisine'}
+                      </p>
+                    </div>
+                    {restaurant.distance_km != null && (
+                      <span className="rounded-sm bg-canvas-soft dark:bg-canvas-night-soft border border-hairline dark:border-hairline-strong px-2.5 py-1 text-xs text-ink dark:text-on-dark font-medium shrink-0">
+                        {Number(restaurant.distance_km).toFixed(1)} km
+                      </span>
+                    )}
+                  </div>
 
-              <div className="mt-5 space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                {restaurant.address && (
-                  <div className="flex gap-2">
-                    <MapPin className="mt-0.5 h-4 w-4 text-emerald-500" />
-                    <span>
-                      {restaurant.address}
-                      {restaurant.area ? `, ${restaurant.area}` : ''}
-                      {restaurant.city ? `, ${restaurant.city}` : ''}
-                    </span>
+                  <div className="space-y-3 text-xs text-ink-mute dark:text-ink-mute-2">
+                    {restaurant.address && (
+                      <div className="flex gap-2.5 items-start">
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="leading-relaxed">
+                          {restaurant.address}
+                          {restaurant.area ? `, ${restaurant.area}` : ''}
+                          {restaurant.city ? `, ${restaurant.city}` : ''}
+                        </span>
+                      </div>
+                    )}
+                    {restaurant.phone && (
+                      <div className="flex gap-2.5 items-center">
+                        <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span>{restaurant.phone}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {restaurant.phone && (
-                  <div className="flex gap-2">
-                    <Phone className="mt-0.5 h-4 w-4 text-emerald-500" />
-                    <span>{restaurant.phone}</span>
-                  </div>
-                )}
+                </div>
+
                 {restaurant.website && (
-                  <a href={restaurant.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
-                    <Globe className="h-4 w-4" />
-                    Website
-                  </a>
+                  <div className="mt-5 pt-4 border-t border-hairline dark:border-hairline-strong">
+                    <a
+                      href={restaurant.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                    >
+                      <Globe className="h-3.5 w-3.5" />
+                      Visit Website
+                    </a>
+                  </div>
                 )}
-              </div>
-            </Card>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
