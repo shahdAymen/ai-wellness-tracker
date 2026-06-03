@@ -9,7 +9,7 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "var(--primary)",
+          DEFAULT: "rgb(var(--primary-rgb) / <alpha-value>)",
           deep: "var(--primary-deep)",
           soft: "var(--primary-soft)",
         },

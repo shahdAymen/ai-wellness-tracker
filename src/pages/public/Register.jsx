@@ -14,7 +14,7 @@ import {
 import Button from "../../components/UI/Button";
 import { Card } from "../../components/UI/Card";
 import { useAuth } from "../../context/AuthContext";
-import { ThemeToggle } from "../../components/UI/ThemeToggle";
+
 
 export default function Register() {
   const navigate = useNavigate();
@@ -89,9 +89,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-canvas dark:bg-canvas-night flex items-center justify-center p-6 transition-colors duration-300">
 
-      <div className="absolute top-6 right-6">
-        <ThemeToggle />
-      </div>
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

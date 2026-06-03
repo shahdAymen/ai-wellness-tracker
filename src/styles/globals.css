@@ -15,11 +15,11 @@
   --color-accent: #6b01c2;
 
   --bg-primary: #FFFFFF;
-  --bg-secondary: #FAFAFA;
-  --bg-tertiary: #EDEDED;
-  --text-primary: #171717;
-  --text-secondary: #707070;
-  --border-color: #DFDFDF;
+  --bg-secondary: #F4F6FA;
+  --bg-tertiary: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --border-color: #E2E8F0;
 
   /* App theme tokens (use these in components/pages). */
   --app-bg: var(--canvas);
@@ -30,33 +30,34 @@
   --app-muted: var(--ink-mute);
 
   /* Design system tokens */
-  --primary: #3ecf8e;
+  --primary-rgb: 62 207 142;
+  --primary: rgb(var(--primary-rgb));
   --primary-deep: #24b47e;
   --primary-soft: #4ade80;
 
-  --ink: #171717;
-  --ink-secondary: #212121;
-  --ink-mute: #707070;
-  --ink-mute-2: #9a9a9a;
-  --ink-faint: #b2b2b2;
+  --ink: #0F172A;
+  --ink-secondary: #1E293B;
+  --ink-mute: #475569;
+  --ink-mute-2: #64748B;
+  --ink-faint: #94A3B8;
 
-  --on-primary: #171717;
+  --on-primary: #0F172A;
   --on-dark: #ffffff;
 
   --canvas: #ffffff;
-  --canvas-soft: #fafafa;
+  --canvas-soft: #F4F6FA;
   --canvas-night: #1c1c1c;
   --canvas-night-soft: #202020;
 
-  --hairline: #dfdfdf;
-  --hairline-strong: #c7c7c7;
-  --hairline-cool: #ededed;
-  --hairline-cool-2: #efefef;
-  --hairline-cool-3: #d4d4d4;
+  --hairline: #E2E8F0;
+  --hairline-strong: #CBD5E1;
+  --hairline-cool: #F1F5F9;
+  --hairline-cool-2: #F8FAFC;
+  --hairline-cool-3: #94A3B8;
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
 
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -84,7 +85,8 @@
   --app-muted: var(--ink-mute);
 
   /* Design system tokens (Dark) */
-  --primary: #3ecf8e;
+  --primary-rgb: 62 207 142;
+  --primary: rgb(var(--primary-rgb));
   --primary-deep: #24b47e;
   --primary-soft: #4ade80;
 

@@ -13,7 +13,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ThemeToggle } from '../UI/ThemeToggle';
+
 import { useGlobalLoading } from '../../context/LoadingContext';
 
 export default function AdminLayout() {
@@ -139,7 +139,7 @@ export default function AdminLayout() {
             </div>
 
             <div className="flex items-center gap-4">
-              <ThemeToggle />
+
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
                   <p className="text-xs font-semibold text-ink dark:text-on-dark leading-tight">{user?.name}</p>

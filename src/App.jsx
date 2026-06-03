@@ -2,7 +2,9 @@ import React from 'react';
 import { Navigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/Shared/ProtectedRoute';
+import { ThemeToggle } from './components/UI/ThemeToggle';
 import './styles/globals.css';
+
 
 
 // Layouts
@@ -130,5 +132,10 @@ function AppRoutes() {
 // APP ROOT
 // ===============================
 export default function App() {
-  return <AppRoutes />;
+  return (
+    <>
+      <AppRoutes />
+      <ThemeToggle />
+    </>
+  );
 }

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { UserCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ThemeToggle } from '../UI/ThemeToggle';
+
 import { useGlobalLoading } from '../../context/LoadingContext';
 import VigoCoach from '../Chat/VigoCoach';
 import { Sparkles } from 'lucide-react';
@@ -106,7 +106,7 @@ export default function UserLayout() {
                     }}
                     className={`w-full flex items-center gap-4 px-3 py-2.5 rounded-sm text-sm transition-all duration-200 shrink-0
                     ${isActive
-                        ? 'bg-primary/10 border-l-2 border-primary text-primary font-medium'
+                        ? ' text-primary font-medium'
                         : 'text-ink-mute dark:text-ink-mute-2 hover:bg-hairline-cool dark:hover:bg-canvas-night-soft hover:text-ink dark:hover:text-on-dark'
                       }`}
                   >
@@ -121,6 +121,21 @@ export default function UserLayout() {
                 );
               })}
             </nav>
+          </div>
+
+          {/* User Profile Info */}
+          <div className="p-3 border-t border-hairline dark:border-hairline-strong flex items-center gap-3 shrink-0 overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-ink font-semibold text-xs shadow-sm shrink-0">
+              {getInitials(user?.name)}
+            </div>
+            <div className={`transition-opacity duration-300 min-w-0 ${sidebarOpen ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'}`}>
+              <p className="text-xs font-semibold text-ink dark:text-on-dark leading-tight truncate">
+                {user?.name}
+              </p>
+              <p className="text-[10px] text-ink-mute dark:text-ink-mute-2 truncate">
+                {user?.email}
+              </p>
+            </div>
           </div>
 
           {/* Logout */}
@@ -141,49 +156,39 @@ export default function UserLayout() {
         </div>
       </aside>
 
+      {/* Mobile Menu Toggle Button */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-40 lg:hidden p-2.5 rounded-full bg-canvas/80 dark:bg-canvas-night/80 border border-hairline dark:border-hairline-strong shadow-md text-ink dark:text-on-dark hover:bg-hairline-cool dark:hover:bg-canvas-night-soft transition-colors"
+          title="Open Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Floating AI Coach Trigger */}
+      <motion.button
+        onClick={() => setIsVigoOpen(true)}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: 1.1, y: -2 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-6 right-24 z-[9999] p-3.5 rounded-full shadow-lg transition-all duration-300 
+                   bg-canvas/80 dark:bg-canvas-night/80 backdrop-blur-md 
+                   border border-hairline dark:border-hairline-strong 
+                   text-primary hover:shadow-xl hover:border-hairline-strong dark:hover:border-on-dark
+                   focus:outline-none focus:ring-2 focus:ring-primary/50"
+        title="Open Vigo AI Coach"
+      >
+        <div className="relative w-6 h-6 flex items-center justify-center">
+          <Sparkles className="w-6 h-6 text-primary fill-primary/10" />
+          <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full animate-pulse" />
+        </div>
+      </motion.button>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-canvas dark:bg-canvas-night">
-        {/* Top Bar */}
-        <header className="bg-canvas dark:bg-canvas-night border-b border-hairline dark:border-hairline-strong px-6 py-4">
-          <div className="flex items-center">
-            {/* Left (menu button) */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink dark:text-on-dark"
-            >
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
-            {/* Right */}
-            <div className="ml-auto flex items-center gap-4">
-              <ThemeToggle />
-
-              <button
-                onClick={() => setIsVigoOpen(true)}
-                className="p-2.5 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink-mute dark:text-ink-mute-2 hover:text-primary transition-colors relative"
-                title="Open Vigo AI Coach"
-              >
-                <Sparkles className="w-4.5 h-4.5 text-primary" />
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full" />
-              </button>
-
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-xs font-semibold text-ink dark:text-on-dark leading-tight">
-                    {user?.name}
-                  </p>
-                  <p className="text-[10px] text-ink-mute dark:text-ink-mute-2">
-                    {user?.email}
-                  </p>
-                </div>
-
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-ink font-semibold text-xs shadow-sm">
-                  {getInitials(user?.name)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
         {isApiLoading && <div className="h-[2px] w-full bg-primary/80" />}
 
         {/* Page Content */}
@@ -203,16 +208,6 @@ export default function UserLayout() {
       {/* Vigo AI Wellness Coach */}
       <VigoCoach isOpen={isVigoOpen} onClose={() => setIsVigoOpen(false)} />
 
-      {/* Vigo Floating Toggle Action Button */}
-      {!isVigoOpen && (
-        <button
-          onClick={() => setIsVigoOpen(true)}
-          className="vigo-float-btn animate-fade-in"
-          title="Chat with Vigo AI Coach"
-        >
-          <Sparkles size={22} className="text-ink" />
-        </button>
-      )}
     </div>
   );
 }

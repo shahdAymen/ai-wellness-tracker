@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   dashboardAPI,
   getPlanDays,
@@ -10,6 +10,7 @@ import {
 } from '../services/api';
 
 export function useDashboardData() {
+  const isInitialLoad = useRef(true);
   const [state, setState] = useState({
     dashboard: null,
     todayPlan: null,
@@ -30,7 +31,11 @@ export function useDashboardData() {
   });
 
   const load = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    if (isInitialLoad.current) {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+    } else {
+      setState((prev) => ({ ...prev, error: null }));
+    }
 
     const [dashboard, weeklyPlan, dailyStats, waterToday, googleFit] = await Promise.allSettled([
       dashboardAPI.getUserDashboard(),
@@ -105,6 +110,7 @@ export function useDashboardData() {
       loading: false,
       error: fatalError || null,
     });
+    isInitialLoad.current = false;
   }, []);
 
   useEffect(() => {

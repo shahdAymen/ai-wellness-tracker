@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPlanMeals, mealsAPI, statsAPI, unwrapSettledResult, waterAPI } from '../services/api';
 
 export function useTrackerData() {
+  const isInitialLoad = useRef(true);
   const [state, setState] = useState({
     stats: null,
     waterHistory: [],
@@ -19,7 +20,11 @@ export function useTrackerData() {
   });
 
   const load = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    if (isInitialLoad.current) {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+    } else {
+      setState((prev) => ({ ...prev, error: null }));
+    }
 
     const [stats, waterHistory, waterToday, todayPlan] = await Promise.allSettled([
       statsAPI.getDaily(),
@@ -55,6 +60,7 @@ export function useTrackerData() {
       loading: false,
       error: fatalError || null,
     });
+    isInitialLoad.current = false;
   }, []);
 
   useEffect(() => {
