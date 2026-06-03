@@ -15,7 +15,10 @@ export function getTodayDay(workoutPlan) {
   return workoutPlan.days.find((day) => {
     if (!day.date) return false;
     try {
-      const d = new Date(day.date);
+      const cleanDateStr = typeof day.date === 'string' && day.date.includes('-')
+        ? day.date.replace(/-/g, '/')
+        : day.date;
+      const d = new Date(cleanDateStr);
       return d.getFullYear() === today.getFullYear() &&
              d.getMonth() === today.getMonth() &&
              d.getDate() === today.getDate();
@@ -71,11 +74,58 @@ function updateExerciseCompletion(workoutPlan, workoutPlanId, nextCompleted) {
     completedWorkouts,
   };
 }
+/**
+ * Synchronize the workout plan's days and dates with the real current week,
+ * starting from the day it was generated.
+ */
+export function syncWorkoutPlan(workoutPlan) {
+  if (!workoutPlan || !Array.isArray(workoutPlan.days)) return workoutPlan;
+
+  let genDateStr = localStorage.getItem('workout_plan_generation_date');
+  if (!genDateStr) {
+    genDateStr = localStorage.getItem('plan_generation_date');
+  }
+
+  let startDate;
+  if (genDateStr) {
+    startDate = new Date(genDateStr);
+  } else {
+    startDate = new Date();
+    localStorage.setItem('workout_plan_generation_date', startDate.toISOString());
+  }
+
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  const syncedDays = workoutPlan.days.map((day, index) => {
+    const d = new Date(startDate);
+    d.setDate(startDate.getDate() + index);
+
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+    const dayName = dayNames[d.getDay()];
+
+    return {
+      ...day,
+      date: formattedDate,
+      day: dayName,
+    };
+  });
+
+  return {
+    ...workoutPlan,
+    days: syncedDays,
+  };
+}
 
 export function useCurrentWorkout() {
   const query = useQuery({
     queryKey: workoutQueryKeys.current,
-    queryFn: () => workoutAPI.getCurrent(),
+    queryFn: async () => {
+      const data = await workoutAPI.getCurrent();
+      return syncWorkoutPlan(data);
+    },
   });
 
   return {
@@ -88,7 +138,11 @@ export function useGenerateWorkoutPlan() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => workoutAPI.generatePlan(),
+    mutationFn: async () => {
+      const data = await workoutAPI.generatePlan();
+      localStorage.setItem('workout_plan_generation_date', new Date().toISOString());
+      return data;
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: workoutQueryKeys.current });
       window.dispatchEvent(new CustomEvent('vitalityai:dashboard-refresh'));

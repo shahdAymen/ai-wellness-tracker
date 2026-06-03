@@ -37,18 +37,18 @@ export function useDashboardData() {
       setState((prev) => ({ ...prev, error: null }));
     }
 
-    const [dashboard, weeklyPlan, dailyStats, waterToday, googleFit] = await Promise.allSettled([
+    const [dashboard, weeklyPlan, dailyStats, waterHistory, googleFit] = await Promise.allSettled([
       dashboardAPI.getUserDashboard(),
       mealsAPI.getWeekly(),
       statsAPI.getDaily(),
-      waterAPI.getToday(),
+      waterAPI.getHistory(),
       googleFitAPI.getTodaySummary(),
     ]);
 
     const dashboardResult = unwrapSettledResult(dashboard);
     const weeklyPlanResult = unwrapSettledResult(weeklyPlan, { emptyValue: null });
     const dailyStatsResult = unwrapSettledResult(dailyStats, { emptyValue: null });
-    const waterTodayResult = unwrapSettledResult(waterToday, { emptyValue: null });
+    const waterHistoryResult = unwrapSettledResult(waterHistory, { emptyValue: [] });
     const googleFitResult = unwrapSettledResult(googleFit, {
       emptyValue: null,
       allowIntegration: true,
@@ -58,7 +58,7 @@ export function useDashboardData() {
       dashboardResult.error,
       weeklyPlanResult.error,
       dailyStatsResult.error,
-      waterTodayResult.error,
+      waterHistoryResult.error,
       googleFitResult.error,
     ].find(Boolean);
 
@@ -74,6 +74,21 @@ export function useDashboardData() {
 
     const todayPlanDay = weeklyDays.find((day) => day.date === todayDateString) || null;
     const todayMeals = todayPlanDay ? (todayPlanDay.meals || []) : [];
+
+    // Filter waterHistory to only keep entries matching today's local date
+    const rawWaterHistory = Array.isArray(waterHistoryResult.value) ? waterHistoryResult.value : [];
+    const todayWaterLogs = rawWaterHistory.filter((entry) => {
+      if (!entry.date) return false;
+      const datePart = entry.date.includes('T') ? entry.date.split('T')[0] : entry.date;
+      return datePart === todayDateString;
+    });
+
+    // Compute today's water summary dynamically from local date-filtered history
+    const waterTodayValue = {
+      totalAmount: todayWaterLogs.reduce((sum, entry) => sum + Number(entry.amount || 0), 0),
+      logsCount: todayWaterLogs.length,
+      date: todayDateString,
+    };
 
     // Calculate consumed, total, remaining calories and completed meals dynamically to match the synchronized UI!
     const targetCalories = dashboardResult.value?.targetCalories || 0;
@@ -97,13 +112,13 @@ export function useDashboardData() {
       todayPlan: todayPlanDay,
       todayMeals: todayMeals,
       dailyStats: dailyStatsResult.value,
-      waterToday: waterTodayResult.value,
+      waterToday: waterTodayValue,
       googleFit: googleFitResult.value,
       emptyStates: {
         dashboard: dashboardResult.isEmpty || todayMeals.length === 0,
         meals: todayPlanDay === null,
         stats: dailyStatsResult.isEmpty,
-        water: waterTodayResult.isEmpty,
+        water: waterHistoryResult.isEmpty || waterTodayValue.totalAmount === 0,
         googleFit: googleFitResult.isEmpty,
         googleFitIntegrationMissing: googleFitResult.isIntegrationMissing,
       },

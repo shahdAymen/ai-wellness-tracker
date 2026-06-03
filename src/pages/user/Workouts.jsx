@@ -17,7 +17,10 @@ function isToday(dateStr) {
   if (!dateStr) return false;
   try {
     const today = new Date();
-    const d = new Date(dateStr);
+    const cleanDateStr = typeof dateStr === 'string' && dateStr.includes('-')
+      ? dateStr.replace(/-/g, '/')
+      : dateStr;
+    const d = new Date(cleanDateStr);
     return d.getFullYear() === today.getFullYear() &&
            d.getMonth() === today.getMonth() &&
            d.getDate() === today.getDate();
@@ -29,7 +32,10 @@ function isToday(dateStr) {
 function formatDate(dateStr) {
   if (!dateStr) return '';
   try {
-    return new Date(dateStr).toLocaleDateString(undefined, {
+    const cleanDateStr = typeof dateStr === 'string' && dateStr.includes('-')
+      ? dateStr.replace(/-/g, '/')
+      : dateStr;
+    return new Date(cleanDateStr).toLocaleDateString(undefined, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
