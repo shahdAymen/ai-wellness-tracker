@@ -32,7 +32,7 @@ function updateDays(days, mealPlanId, nextCompleted) {
     };
   });
 }
-
+  
 export default function AIPlanner() {
   const { showToast } = useToast();
   const { weeklyDays, monthlyDays, emptyStates, loading, error, reload } = usePlannerData();
