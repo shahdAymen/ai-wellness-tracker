@@ -580,13 +580,13 @@ export default function UserDashboard() {
                         {displayMeals.map((meal) => (
                           <div
                             key={meal.mealPlanId || `${meal.nameEn}-${meal.mealType}`}
-                            className={`flex items-center justify-between gap-4 rounded-sm border p-4 transition-colors duration-200 ${meal.isCompleted
+                            className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-sm border p-4 transition-colors duration-200 ${meal.isCompleted
                               ? 'border-primary/20 bg-primary/5'
                               : 'border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft'
                               }`}
                           >
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-[9px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-canvas dark:bg-canvas-night border border-hairline dark:border-hairline-strong text-ink-mute dark:text-ink-mute-2">
                                   {meal.mealType}
                                 </span>
@@ -602,14 +602,20 @@ export default function UserDashboard() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                              <CheckCircle2 className={`h-4 w-4 ${meal.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`} />
+                            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-hairline dark:border-hairline-strong">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle2 className={`h-4 w-4 ${meal.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`} />
+                                <span className="text-xs text-ink-mute dark:text-ink-mute-2 sm:hidden">
+                                  {meal.isCompleted ? 'Completed' : 'Pending'}
+                                </span>
+                              </div>
                               <Button
                                 type="button"
                                 size="sm"
                                 variant={meal.isCompleted ? 'secondary' : 'primary'}
                                 onClick={() => toggleMeal(meal)}
                                 disabled={mealBusyId === meal.mealPlanId}
+                                className="w-full sm:w-auto text-center"
                               >
                                 {mealBusyId === meal.mealPlanId
                                   ? 'Saving...'
@@ -682,12 +688,12 @@ export default function UserDashboard() {
                               return (
                                 <div
                                   key={exerciseId}
-                                  className={`flex items-center justify-between gap-4 rounded-sm border p-4 transition-colors duration-200 ${exercise.isCompleted
+                                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-sm border p-4 transition-colors duration-200 ${exercise.isCompleted
                                     ? 'border-primary/20 bg-primary/5'
                                     : 'border-hairline dark:border-hairline-strong bg-canvas-soft dark:bg-canvas-night-soft'
                                     }`}
                                 >
-                                  <div className="min-w-0">
+                                  <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2">
                                       <p className={`text-sm font-semibold tracking-tight ${exercise.isCompleted ? 'text-primary' : 'text-ink dark:text-on-dark'}`}>
                                         {exercise.exerciseName}
@@ -698,14 +704,20 @@ export default function UserDashboard() {
                                     </p>
                                   </div>
 
-                                  <div className="flex items-center gap-3">
-                                    <CheckCircle2 className={`h-4 w-4 ${exercise.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`} />
+                                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-hairline dark:border-hairline-strong">
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle2 className={`h-4 w-4 ${exercise.isCompleted ? 'text-primary' : 'text-ink-mute dark:text-ink-mute-2'}`} />
+                                      <span className="text-xs text-ink-mute dark:text-ink-mute-2 sm:hidden">
+                                        {exercise.isCompleted ? 'Completed' : 'Pending'}
+                                      </span>
+                                    </div>
                                     <Button
                                       type="button"
                                       size="sm"
                                       variant={exercise.isCompleted ? 'secondary' : 'primary'}
                                       onClick={() => handleToggleWorkoutExercise(exercise)}
                                       disabled={workoutBusyId === (exercise.id || exercise.workoutPlanId)}
+                                      className="w-full sm:w-auto text-center"
                                     >
                                       {workoutBusyId === (exercise.id || exercise.workoutPlanId)
                                         ? 'Saving...'

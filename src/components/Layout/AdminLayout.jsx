@@ -54,7 +54,7 @@ export default function AdminLayout() {
         <div className="h-full flex flex-col justify-between">
           <div className="flex flex-col flex-1 min-h-0">
             {/* Logo */}
-            <div className="p-4 border-b border-hairline dark:border-hairline-strong h-[73px] flex items-center shrink-0">
+            <div className="p-4 border-b border-hairline dark:border-hairline-strong h-[73px] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-sm bg-accent-tomato flex items-center justify-center shadow-sm shrink-0">
                   <Shield className="w-4.5 h-4.5 text-white" />
@@ -67,6 +67,14 @@ export default function AdminLayout() {
                   Vitality<span className="text-accent-tomato font-medium">Admin</span>
                 </span>
               </div>
+              {/* Close Button for mobile */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className={`lg:hidden p-1.5 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink dark:text-on-dark transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                title="Close Menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Navigation */}
@@ -155,7 +163,7 @@ export default function AdminLayout() {
         {isApiLoading && <div className="h-[2px] w-full bg-accent-tomato/80" />}
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto bg-canvas-soft dark:bg-canvas-night-soft transition-colors duration-300">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-canvas-soft dark:bg-canvas-night-soft transition-colors duration-300">
           <Outlet />
         </main>
       </div>

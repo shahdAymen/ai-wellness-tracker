@@ -62,6 +62,53 @@ export function AuthProvider({ children }) {
     let mounted = true;
 
     async function restoreSession() {
+      const params = new URLSearchParams(window.location.search);
+      const queryToken = params.get('token') || params.get('Token') || params.get('accessToken') || params.get('access_token');
+      const queryRefreshToken = params.get('refreshToken') || params.get('refresh_token') || params.get('Refreshtoken');
+
+      if (queryToken && queryRefreshToken) {
+        const id = params.get('id') || params.get('Id') || params.get('userId') || params.get('UserId');
+        const email = params.get('email') || params.get('Email');
+        const fullName = params.get('fullName') || params.get('FullName') || params.get('name') || params.get('Name') || params.get('fullname');
+        const expiresIn = params.get('expiresIn') || params.get('expires_in') || params.get('ExpiresIn') || 3600;
+
+        const rolesStr = params.get('roles') || params.get('Roles') || params.get('role') || params.get('Role');
+        let roles = [];
+        if (rolesStr) {
+          try {
+            roles = JSON.parse(rolesStr);
+          } catch {
+            roles = [rolesStr];
+          }
+        }
+
+        const payload = {
+          token: queryToken,
+          refreshToken: queryRefreshToken,
+          id,
+          email,
+          fullName,
+          expiresIn,
+          roles: roles.length ? roles : ['User'],
+        };
+
+        setAuthSession(payload);
+
+        // Remove parameters from URL
+        const newUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+
+        try {
+          const restored = await hydrateUser(payload);
+          if (mounted) setUser(restored);
+        } catch (err) {
+          console.error('Failed to restore user session from URL parameters:', err);
+        } finally {
+          if (mounted) setLoading(false);
+        }
+        return;
+      }
+
       const session = getAuthSession();
 
       if (!session.token) {

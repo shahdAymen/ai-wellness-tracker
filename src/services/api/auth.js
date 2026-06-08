@@ -31,5 +31,10 @@ export const authAPI = {
       { skipAuth: true }
     ),
 
-  getGoogleLoginUrl: () => `${API_BASE_URL}/Auth/google-login`,
+  getGoogleLoginUrl: (redirectUrl) => {
+    const base = `${API_BASE_URL}/Auth/google-login`;
+    if (!redirectUrl) return base;
+    const encoded = encodeURIComponent(redirectUrl);
+    return `${base}?redirectUrl=${encoded}&returnUrl=${encoded}&redirect_uri=${encoded}&redirectUri=${encoded}&redirect_url=${encoded}`;
+  },
 };

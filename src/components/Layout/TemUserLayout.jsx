@@ -75,7 +75,7 @@ export default function UserLayout() {
         <div className="h-full flex flex-col justify-between">
           <div className="flex flex-col flex-1 min-h-0">
             {/* Logo */}
-            <div className="p-4 border-b border-hairline dark:border-hairline-strong h-[73px] flex items-center shrink-0">
+            <div className="p-4 border-b border-hairline dark:border-hairline-strong h-[73px] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-sm bg-ink dark:bg-on-dark flex items-center justify-center shadow-sm shrink-0">
                   <Activity className="w-4.5 h-4.5 text-primary" />
@@ -87,6 +87,14 @@ export default function UserLayout() {
                   Vitality<span className="text-primary font-medium">AI</span>
                 </span>
               </div>
+              {/* Close Button for mobile */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className={`lg:hidden p-1.5 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink dark:text-on-dark transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                title="Close Menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Navigation */}
@@ -154,16 +162,41 @@ export default function UserLayout() {
         </div>
       </aside>
 
-      {/* Mobile Menu Toggle Button */}
-      {!sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="fixed top-4 left-4 z-40 lg:hidden p-2.5 rounded-full bg-canvas/80 dark:bg-canvas-night/80 border border-hairline dark:border-hairline-strong shadow-md text-ink dark:text-on-dark hover:bg-hairline-cool dark:hover:bg-canvas-night-soft transition-colors"
-          title="Open Menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-      )}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-canvas dark:bg-canvas-night">
+        {/* Mobile Header Bar */}
+        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-canvas dark:bg-canvas-night border-b border-hairline dark:border-hairline-strong shrink-0 transition-colors duration-300">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1.5 rounded-sm hover:bg-hairline-cool dark:hover:bg-canvas-night-soft text-ink dark:text-on-dark transition-colors"
+              title="Open Menu"
+            >
+              <Menu className="w-5.5 h-5.5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-sm bg-ink dark:bg-on-dark flex items-center justify-center shadow-sm shrink-0">
+                <Activity className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm font-bold tracking-tight text-ink dark:text-on-dark whitespace-nowrap">
+                Vitality<span className="text-primary font-medium">AI</span>
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-ink font-semibold text-[10px] shadow-sm">
+              {getInitials(user?.name)}
+            </div>
+          </div>
+        </header>
+
+        {isApiLoading && <div className="h-[2px] w-full bg-primary/80" />}
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-canvas-soft dark:bg-canvas-night-soft">
+          <Outlet />
+        </main>
+      </div>
 
       {/* Floating AI Coach Trigger */}
       <motion.button
@@ -172,7 +205,7 @@ export default function UserLayout() {
         animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.1, y: -2 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-6 right-24 z-[9999] p-3.5 rounded-full shadow-lg transition-all duration-300 
+        className="fixed bottom-6 right-6 z-[9999] p-3.5 rounded-full shadow-lg transition-all duration-300 
                    bg-canvas/80 dark:bg-canvas-night/80 backdrop-blur-md 
                    border border-hairline dark:border-hairline-strong 
                    text-primary hover:shadow-xl hover:border-hairline-strong dark:hover:border-on-dark
@@ -184,16 +217,6 @@ export default function UserLayout() {
           <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full animate-pulse" />
         </div>
       </motion.button>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-canvas dark:bg-canvas-night">
-        {isApiLoading && <div className="h-[2px] w-full bg-primary/80" />}
-
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto bg-canvas-soft dark:bg-canvas-night-soft">
-          <Outlet />
-        </main>
-      </div>
 
       {/* Mobile Overlay */}
       {sidebarOpen && (

@@ -294,7 +294,7 @@ export default function Settings() {
               Logout revokes your current session keys, terminates the server-side authentication state, and clears your local storage.
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
-              <Button variant="secondary" onClick={() => (window.location.href = authAPI.getGoogleLoginUrl())}>
+              <Button variant="secondary" onClick={() => (window.location.href = authAPI.getGoogleLoginUrl(window.location.href))}>
                 <Link className="h-3.5 w-3.5 mr-1" />
                 Connect Google Account
               </Button>

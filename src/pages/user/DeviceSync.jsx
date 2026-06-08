@@ -62,7 +62,7 @@ export default function DeviceSync() {
   }, []);
 
   const connectGoogle = () => {
-    window.location.href = authAPI.getGoogleLoginUrl();
+    window.location.href = authAPI.getGoogleLoginUrl(window.location.href);
   };
 
   if (loading) return <PageLoader label="Loading Google Fit summary..." />;
