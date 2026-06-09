@@ -5,6 +5,8 @@ import { Activity, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../services/api';
+
 
 
 export function Login() {
@@ -149,6 +151,36 @@ export function Login() {
               {loading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-hairline dark:border-hairline-strong"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-canvas dark:bg-canvas-night px-2 text-ink-mute dark:text-ink-mute-2 font-medium">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <Button
+            variant="secondary"
+            type="button"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={() => {
+              window.location.href = authAPI.getGoogleLoginUrl(window.location.origin + '/login');
+            }}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+              <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.6h3.28c1.92,-1.77 3.03,-4.37 3.03,-7.4C21.65,11.8 21.55,11.4 21.35,11.1z" fill="#4285F4" />
+                <path d="M12,20.5c2.3,0 4.23,-0.76 5.64,-2.1l-3.28,-2.6c-0.9,0.6 -2.07,0.98 -3.42,0.98 -2.63,0 -4.85,-1.78 -5.64,-4.17H1.92v2.7c1.44,2.87 4.41,4.72 7.82,4.72z" fill="#34A853" />
+                <path d="M6.36,12.6c-0.2,-0.6 -0.31,-1.24 -0.31,-1.9s0.11,-1.3 0.31,-1.9V6.1H1.92c-0.69,1.38 -1.08,2.93 -1.08,4.6s0.39,3.22 1.08,4.6l4.44,-3.3z" fill="#FBBC05" />
+                <path d="M12,5.62c1.25,0 2.37,0.43 3.25,1.27l2.43,-2.43C16.22,3.06 14.29,2.3 12,2.3 8.59,2.3 5.62,4.15 4.18,7.02l4.44,3.3C9.41,7.92 11.63,5.62 12,5.62z" fill="#EA4335" />
+              </g>
+            </svg>
+            Sign in with Google
+          </Button>
 
           <div className="mt-6 text-center text-xs">
             <p className="text-ink-mute dark:text-ink-mute-2">

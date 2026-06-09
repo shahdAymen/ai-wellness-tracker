@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Flame, HeartPulse, Link, Moon, RefreshCw, Route, Timer } from 'lucide-react';
+import { Activity, Flame, HeartPulse, Moon, RefreshCw, Route, Timer } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { EmptyState, ErrorState, PageLoader } from '../../components/UI/StatusStates';
-import { authAPI, googleFitAPI, isFatalApiError, isIntegrationError } from '../../services/api';
+import { googleFitAPI, isFatalApiError, isIntegrationError } from '../../services/api';
+
 import AnimatedNumber from '../../components/UI/AnimatedNumber';
 
 const containerVariants = {
@@ -61,9 +62,7 @@ export default function DeviceSync() {
     load();
   }, []);
 
-  const connectGoogle = () => {
-    window.location.href = authAPI.getGoogleLoginUrl(window.location.href);
-  };
+
 
   if (loading) return <PageLoader label="Loading Google Fit summary..." />;
   if (error) return <ErrorState message={error.message} onRetry={load} />;
@@ -79,28 +78,24 @@ export default function DeviceSync() {
             Google Fit data is optional. When it is not connected, this page stays friendly and actionable.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           <Button variant="secondary" onClick={load}>
             <RefreshCw className="h-3.5 w-3.5 mr-1" />
             Refresh
           </Button>
-          <Button onClick={connectGoogle}>
-            <Link className="h-3.5 w-3.5 mr-1" />
-            Connect Google
-          </Button>
+          {!integrationMissing && summary && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              Connected with Google
+            </span>
+          )}
         </div>
       </div>
 
       {integrationMissing || !summary ? (
         <EmptyState
           title="No Google Fit account connected."
-          message="Connect Google Fit to sync steps, calories burned, distance, heart rate, activity minutes, and sleep."
-          action={
-            <Button onClick={connectGoogle}>
-              <Link className="h-3.5 w-3.5 mr-1" />
-              Connect Google Fit
-            </Button>
-          }
+          message="Google Fit synchronization requires logging in using your Google account. Please log out and sign in with Google to automatically synchronize your metrics (steps, calories, heart rate, active minutes, and sleep)."
         />
       ) : (
         <motion.div

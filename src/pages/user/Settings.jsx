@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Calendar, Link, LogOut, Ruler, Scale, Shield, User, UserRound } from 'lucide-react';
+import { Activity, Calendar, LogOut, Ruler, Scale, Shield, User, UserRound } from 'lucide-react';
 import Button from '../../components/UI/Button';
 import { Card } from '../../components/UI/Card';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { authAPI, lookupAPI, userAPI } from '../../services/api';
+import { lookupAPI, userAPI } from '../../services/api';
+
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -294,10 +295,6 @@ export default function Settings() {
               Logout revokes your current session keys, terminates the server-side authentication state, and clears your local storage.
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
-              <Button variant="secondary" onClick={() => (window.location.href = authAPI.getGoogleLoginUrl(window.location.href))}>
-                <Link className="h-3.5 w-3.5 mr-1" />
-                Connect Google Account
-              </Button>
               <Button variant="danger" onClick={logout}>
                 <LogOut className="h-3.5 w-3.5 mr-1" />
                 Logout
