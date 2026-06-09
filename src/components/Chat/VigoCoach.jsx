@@ -10,16 +10,73 @@ import {
   FileText,
   Sparkles,
   RefreshCw,
-  Settings
+  Settings,
+  Copy,
+  Check
 } from 'lucide-react';
 import './VigoCoach.css';
 
 // ==========================================
-// 🔴 UPDATE YOUR NGROK URL HERE EVERY TIME
+// 🔴 Chat Bot API URL
 // ==========================================
-const DEFAULT_API_URL = 'https://0400-41-39-127-163.ngrok-free.app';
+const DEFAULT_API_URL = 'https://vitality-chat-bot.onrender.com';
+
+// Simple Markdown Parser for clean chatbot responses
+const parseMarkdown = (text = '') => {
+  if (!text) return null;
+
+  const renderBoldText = (str) => {
+    const parts = str.split(/\*\*([\s\S]*?)\*\*/g);
+    return parts.map((part, i) => {
+      if (i % 2 === 1) {
+        return <strong key={i} className="font-bold text-inherit">{part}</strong>;
+      }
+      return part;
+    });
+  };
+
+  const lines = text.split('\n');
+  return lines.map((line, index) => {
+    let trimmed = line.trim();
+
+    // Check if the line is a header like "**Chest (الصدر)**"
+    const headerMatch = trimmed.match(/^\*\*(.*?)\*\*$/);
+    if (headerMatch) {
+      return (
+        <h4 key={index} className="vigo-chat-header">
+          {headerMatch[1]}
+        </h4>
+      );
+    }
+
+    // Check if the line is a list item like "* **Incline Barbell Press:**..."
+    if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+      const content = trimmed.substring(2);
+      return (
+        <div key={index} className="vigo-chat-list-item">
+          <span className="vigo-chat-bullet">•</span>
+          <div className="vigo-chat-list-content">{renderBoldText(content)}</div>
+        </div>
+      );
+    }
+
+    // Regular paragraph line
+    return (
+      <p key={index} className="vigo-chat-p">
+        {renderBoldText(line)}
+      </p>
+    );
+  });
+};
 
 export default function VigoCoach({ isOpen, onClose }) {
+  const suggestions = [
+    { text: "Workout routine 🏋️‍♂️" },
+    { text: "Healthy meal plan 🥗" },
+    { text: "Fitness tracker guidance 📈" },
+    { text: "How to stay motivated? 🔥" }
+  ];
+
   const [pdfLoaded, setPdfLoaded] = useState(true);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [messages, setMessages] = useState([
@@ -39,12 +96,20 @@ export default function VigoCoach({ isOpen, onClose }) {
   const [uploadProgress, setUploadProgress] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
 
-  // ngrok endpoint from your backend
+  const handleCopyText = (text, id) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedMessageId(id);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    });
+  };
+
+  // Chat Bot API URL
   const [apiUrl, setApiUrl] = useState(() => {
     const saved = localStorage.getItem('vigo_api_url');
-    // Automatically switch to new DEFAULT_API_URL if it has been updated in the code
-    if (!saved || (saved.includes('ngrok-free.app') && saved !== DEFAULT_API_URL)) {
+    // Automatically switch to new DEFAULT_API_URL if it has been updated in the code or was old/ngrok
+    if (!saved || saved.includes('ngrok-free.app') || saved === 'https://0400-41-39-127-163.ngrok-free.app') {
       return DEFAULT_API_URL;
     }
     return saved.trim();
@@ -195,23 +260,24 @@ export default function VigoCoach({ isOpen, onClose }) {
 
     try {
       const cleanUrl = apiUrl.replace(/\/$/, '');
-      const response = await fetch(`${cleanUrl}/api/chat`, {
+      const response = await fetch(`${cleanUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify({
-          user_message: userText
+          question: userText
         })
       });
 
       const data = await response.json();
+      const replyText = data.response || data.reply;
 
-      if (data.reply) {
+      if (replyText) {
         const aiMessage = {
           id: Date.now() + 1,
-          text: data.reply,
+          text: replyText,
           sender: 'ai',
           timestamp: new Date().toLocaleTimeString([], {
             hour: '2-digit',
@@ -239,7 +305,7 @@ export default function VigoCoach({ isOpen, onClose }) {
         ...prev,
         {
           id: Date.now() + 1,
-          text: 'Connection error ❌\n\nPossible reasons:\n- Backend is stopped or offline\n- CORS configuration issue\n- ngrok tunnel has changed or expired\n\n💡 Tip: You can update the API URL by clicking the Settings gear icon in the header.',
+          text: 'Connection error ❌\n\nPossible reasons:\n- Backend is stopped or offline\n- CORS configuration issue\n- The server is cold starting (Render free tier can take ~50 seconds to boot)\n\n💡 Tip: You can update the API URL by clicking the Settings gear icon in the header.',
           sender: 'error',
           timestamp: new Date().toLocaleTimeString([], {
             hour: '2-digit',
@@ -299,7 +365,10 @@ export default function VigoCoach({ isOpen, onClose }) {
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="vigo-title">Vigo</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="vigo-title">Vigo</h2>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Vigo is online" />
+              </div>
               <p className="vigo-subtitle">AI Wellness & Fitness Coach</p>
             </div>
           </div>
@@ -335,14 +404,14 @@ export default function VigoCoach({ isOpen, onClose }) {
         {showSettings && (
           <div className="bg-slate-100 dark:bg-slate-800 p-4 border-b border-app z-10 animate-fade-in">
             <label className="block text-xs font-semibold text-app-muted uppercase tracking-wider mb-2">
-              Vigo Coach API Endpoint (ngrok)
+              Vigo Coach API Endpoint
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={apiUrl}
                 onChange={(e) => setApiUrl(e.target.value.trim())}
-                placeholder="https://YOUR-SUBDOMAIN.ngrok-free.app"
+                placeholder="https://vitality-chat-bot.onrender.com"
                 className="flex-1 bg-app-surface text-app text-sm rounded-lg border border-app px-3 py-1.5 focus:outline-none"
               />
               <button
@@ -357,7 +426,7 @@ export default function VigoCoach({ isOpen, onClose }) {
               </button>
             </div>
             <p className="text-[10px] text-app-muted mt-1.5">
-              Paste your latest ngrok URL here if the backend server restarts.
+              Specify the chatbot backend API URL if needed.
             </p>
           </div>
         )}
@@ -429,17 +498,37 @@ export default function VigoCoach({ isOpen, onClose }) {
                     className={`vigo-message-row ${message.sender}`}
                   >
                     <div className="vigo-bubble">
-                      {message.text}
-                      <span className="vigo-meta">{message.timestamp}</span>
+                      <div className="vigo-chat-message-text">
+                        {parseMarkdown(message.text)}
+                      </div>
+                      <div className="vigo-bubble-footer">
+                        <span className="vigo-meta">{message.timestamp}</span>
+                        {message.sender !== 'error' && (
+                          <button
+                            onClick={() => handleCopyText(message.text, message.id)}
+                            className="vigo-copy-btn"
+                            title="Copy message"
+                          >
+                            {copiedMessageId === message.id ? (
+                              <Check size={12} className="text-emerald-500" />
+                            ) : (
+                              <Copy size={12} />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
 
                 {loading && (
                   <div className="vigo-message-row ai">
-                    <div className="vigo-bubble vigo-loading-bubble">
-                      <Loader2 size={16} className="vigo-spin text-emerald-500" />
-                      <span>Generating response...</span>
+                    <div className="vigo-bubble vigo-typing-bubble">
+                      <div className="vigo-typing-indicator">
+                        <span />
+                        <span />
+                        <span />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -448,6 +537,19 @@ export default function VigoCoach({ isOpen, onClose }) {
 
               {/* Chat Input Field */}
               <div className="vigo-input-area">
+                {!inputValue.trim() && (
+                  <div className="vigo-suggestions-container">
+                    {suggestions.map((s, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setInputValue(s.text)}
+                        className="vigo-suggestion-badge"
+                      >
+                        {s.text}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div className="vigo-input-box">
                   <textarea
                     value={inputValue}

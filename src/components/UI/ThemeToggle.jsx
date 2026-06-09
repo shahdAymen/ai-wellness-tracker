@@ -13,7 +13,7 @@ export function ThemeToggle() {
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.1, y: -2 }}
       whileTap={{ scale: 0.95 }}
-      className="fixed bottom-20 lg:bottom-24 right-4 lg:right-7 z-[9999] p-3.5 rounded-full shadow-lg transition-all duration-300 
+      className="fixed bottom-4 md:bottom-6 right-4 md:right-6 w-[50px] h-[50px] md:w-[50px] md:h-[50px] flex items-center justify-center p-0 z-[9999] rounded-full shadow-lg transition-all duration-300 
                  bg-canvas/80 dark:bg-canvas-night/80 backdrop-blur-md 
                  border border-hairline dark:border-hairline-strong 
                  text-ink dark:text-on-dark 
